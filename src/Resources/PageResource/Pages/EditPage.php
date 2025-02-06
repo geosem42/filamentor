@@ -8,4 +8,5 @@ use Filament\Resources\Pages\EditRecord;
 class EditPage extends EditRecord
 {
     protected static string $resource = PageResource::class;
+    protected static string $view = 'filamentor::pages.builder';
 }
