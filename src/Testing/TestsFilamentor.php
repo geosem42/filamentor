@@ -1,13 +1,13 @@
 <?php
 
-namespace VendorName\Skeleton\Testing;
+namespace Geosem42\Filamentor\Testing;
 
 use Livewire\Features\SupportTesting\Testable;
 
 /**
  * @mixin Testable
  */
-class TestsSkeleton
+class TestsFilamentor
 {
     //
 }

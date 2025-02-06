@@ -1,20 +1,22 @@
 <?php
 
-namespace VendorName\Skeleton;
+namespace Geosem42\Filamentor;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 
-class SkeletonPlugin implements Plugin
+class FilamentorPlugin implements Plugin
 {
     public function getId(): string
     {
-        return 'skeleton';
+        return 'filamentor';
     }
 
     public function register(Panel $panel): void
     {
-        //
+        $panel->pages([
+            Pages\Filamentor::class,
+        ]);
     }
 
     public function boot(Panel $panel): void

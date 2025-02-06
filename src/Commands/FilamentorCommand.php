@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace Geosem42\Filamentor\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class FilamentorCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'filamentor';
 
     public $description = 'My command';
 

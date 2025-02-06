@@ -1,6 +1,6 @@
 <?php
 
-namespace VendorName\Skeleton;
+namespace Geosem42\Filamentor;
 
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Asset;
@@ -13,14 +13,14 @@ use Livewire\Features\SupportTesting\Testable;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use VendorName\Skeleton\Commands\SkeletonCommand;
-use VendorName\Skeleton\Testing\TestsSkeleton;
+use Geosem42\Filamentor\Commands\FilamentorCommand;
+use Geosem42\Filamentor\Testing\TestsFilamentor;
 
-class SkeletonServiceProvider extends PackageServiceProvider
+class FilamentorServiceProvider extends PackageServiceProvider
 {
-    public static string $name = 'skeleton';
+    public static string $name = 'filamentor';
 
-    public static string $viewNamespace = 'skeleton';
+    public static string $viewNamespace = 'filamentor';
 
     public function configurePackage(Package $package): void
     {
@@ -36,7 +36,7 @@ class SkeletonServiceProvider extends PackageServiceProvider
                     ->publishConfigFile()
                     ->publishMigrations()
                     ->askToRunMigrations()
-                    ->askToStarRepoOnGitHub(':vendor_slug/:package_slug');
+                    ->askToStarRepoOnGitHub('geosem42/filamentor');
             });
 
         $configFileName = $package->shortName();
@@ -80,18 +80,18 @@ class SkeletonServiceProvider extends PackageServiceProvider
         if (app()->runningInConsole()) {
             foreach (app(Filesystem::class)->files(__DIR__ . '/../stubs/') as $file) {
                 $this->publishes([
-                    $file->getRealPath() => base_path("stubs/skeleton/{$file->getFilename()}"),
-                ], 'skeleton-stubs');
+                    $file->getRealPath() => base_path("stubs/filamentor/{$file->getFilename()}"),
+                ], 'filamentor-stubs');
             }
         }
 
         // Testing
-        Testable::mixin(new TestsSkeleton);
+        Testable::mixin(new TestsFilamentor);
     }
 
     protected function getAssetPackageName(): ?string
     {
-        return ':vendor_slug/:package_slug';
+        return 'geosem42/filamentor';
     }
 
     /**
@@ -100,9 +100,9 @@ class SkeletonServiceProvider extends PackageServiceProvider
     protected function getAssets(): array
     {
         return [
-            // AlpineComponent::make('skeleton', __DIR__ . '/../resources/dist/components/skeleton.js'),
-            Css::make('skeleton-styles', __DIR__ . '/../resources/dist/skeleton.css'),
-            Js::make('skeleton-scripts', __DIR__ . '/../resources/dist/skeleton.js'),
+            // AlpineComponent::make('filamentor', __DIR__ . '/../resources/dist/components/filamentor.js'),
+            Css::make('filamentor-styles', __DIR__ . '/../resources/dist/filamentor.css'),
+            Js::make('filamentor-scripts', __DIR__ . '/../resources/dist/filamentor.js'),
         ];
     }
 
@@ -112,7 +112,7 @@ class SkeletonServiceProvider extends PackageServiceProvider
     protected function getCommands(): array
     {
         return [
-            SkeletonCommand::class,
+            FilamentorCommand::class,
         ];
     }
 
@@ -146,7 +146,7 @@ class SkeletonServiceProvider extends PackageServiceProvider
     protected function getMigrations(): array
     {
         return [
-            'create_skeleton_table',
+            'create_filamentor_table',
         ];
     }
 }
