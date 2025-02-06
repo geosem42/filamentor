@@ -14,8 +14,9 @@ class FilamentorPlugin implements Plugin
 
     public function register(Panel $panel): void
     {
-        $panel->pages([
-            Pages\Filamentor::class,
+        $panel
+        ->resources([
+            Resources\PageResource::class,
         ]);
     }
 
