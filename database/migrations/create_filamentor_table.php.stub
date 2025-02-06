@@ -8,11 +8,13 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('filamentor_table', function (Blueprint $table) {
+        Schema::create('filamentor_pages', function (Blueprint $table) {
             $table->id();
-
-            // add fields
-
+            $table->string('title');
+            $table->string('slug')->unique();
+            $table->text('description')->nullable();
+            $table->json('layout')->nullable();
+            $table->boolean('is_published')->default(false);
             $table->timestamps();
         });
     }
