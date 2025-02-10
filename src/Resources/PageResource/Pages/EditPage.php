@@ -9,4 +9,11 @@ class EditPage extends EditRecord
 {
     protected static string $resource = PageResource::class;
     protected static string $view = 'filamentor::pages.builder';
+
+    public function saveLayout($layout)
+    {
+        $this->record->layout = $layout;
+        $this->record->save();
+    }
+
 }

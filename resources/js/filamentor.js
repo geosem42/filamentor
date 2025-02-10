@@ -10,12 +10,13 @@ window.addEventListener('alpine:init', () => {
         console.log('Component definition called');
         return {
             rows: [],
+            showSettings: false,
+            activeRow: null,
 
             init() {
                 console.log('Filamentor initialized from JS!');
                 console.log('Raw canvas data:', this.$refs.canvasData.value);
 
-                // Load saved layout data
                 const savedLayout = this.$refs.canvasData.value;
                 if (savedLayout) {
                     this.rows = JSON.parse(savedLayout).sort((a, b) => a.order - b.order);
@@ -33,13 +34,11 @@ window.addEventListener('alpine:init', () => {
                         const [movedRow] = currentRows.splice(evt.oldIndex, 1);
                         currentRows.splice(evt.newIndex, 0, movedRow);
                         
-                        // Create new array reference with updated orders
                         const updatedRows = currentRows.map((row, index) => ({
                             ...row,
                             order: index
                         }));
                         
-                        // Force reactive update
                         this.$nextTick(() => {
                             this.rows = updatedRows;
                             console.log('After reorder:', this.rows);
@@ -48,6 +47,32 @@ window.addEventListener('alpine:init', () => {
                     }
                 });
             },
+
+            openRowSettings(row) {
+                //console.log('Modal trigger:', { row, showSettings: this.showSettings });
+                this.activeRow = row;
+                this.showSettings = true;
+                //console.log('After trigger:', { row: this.activeRow, showSettings: this.showSettings });
+            },
+            
+            updateColumns(count) {
+                const columnWidth = `w-${Math.floor(12/count)}/12`;
+                this.activeRow.columns = Array(parseInt(count)).fill().map(() => columnWidth);
+                console.log('Updated columns:', this.activeRow.columns);
+            },
+
+            saveRowSettings() {
+                const index = this.rows.findIndex(row => row.id === this.activeRow.id);
+                this.rows[index] = this.activeRow;
+                
+                const layoutData = JSON.stringify(this.rows);
+                this.$refs.canvasData.value = layoutData;
+                
+                // Call Livewire action to save
+                this.$wire.saveLayout(layoutData);
+                
+                console.log('Row settings saved:', this.activeRow);
+            },            
 
             addRow() {
                 console.log('Adding new row');
@@ -67,7 +92,6 @@ window.addEventListener('alpine:init', () => {
                 this.$refs.canvasData.value = jsonData;
                 this.$wire.set('data.layout', jsonData);
             }
-
         };
     });
 });
