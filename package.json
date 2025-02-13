@@ -11,7 +11,10 @@
         "build": "vite build"
     },
     "dependencies": {
-        "sortablejs": "^1.15.6"
+        "sortablejs": "^1.15.6",
+        "alpinejs": "^3.x.x",
+        "@alpinejs/sort": "^3.x.x",
+        "@alpinejs/focus": "^3.x.x"
     },
     "devDependencies": {
         "@awcodes/filament-plugin-purge": "^1.1.1",

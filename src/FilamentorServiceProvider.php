@@ -15,6 +15,8 @@ use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Geosem42\Filamentor\Commands\FilamentorCommand;
 use Geosem42\Filamentor\Testing\TestsFilamentor;
+use Geosem42\Filamentor\Support\ElementRegistry;
+use Geosem42\Filamentor\Elements\Text;
 class FilamentorServiceProvider extends PackageServiceProvider
 {
     public static string $name = 'filamentor';
@@ -61,7 +63,13 @@ class FilamentorServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
+        // Register Elements
+        $registry = new ElementRegistry();
+        $registry->register(Text::class);
+        $this->app->instance(ElementRegistry::class, $registry);
+        
         $this->publishes([
+            __DIR__ . '/../node_modules/@alpinejs/sort/dist/cdn.min.js' => public_path('js/geosem42/filamentor/alpine-sort.js'),
             __DIR__ . '/../dist/filamentor.js' => public_path('js/geosem42/filamentor/filamentor.js'),
             __DIR__ . '/../dist/filamentor.css' => public_path('css/geosem42/filamentor/filamentor.css'),
         ], 'filamentor-assets');
@@ -104,6 +112,7 @@ class FilamentorServiceProvider extends PackageServiceProvider
     protected function getAssets(): array
     {
         return [
+            Js::make('alpine-sort', __DIR__ . '/../node_modules/@alpinejs/sort/dist/cdn.min.js'),
             Js::make('filamentor', __DIR__ . '/../dist/filamentor.js'),
             Css::make('filamentor', __DIR__ . '/../dist/filamentor.css'),
         ];
