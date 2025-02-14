@@ -55,8 +55,6 @@ window.addEventListener('alpine:init', () => {
                         });
                     }
                 });
-
-                //this.initializeColumnSorting();
             },
 
             handleSort: (item, position) => {
@@ -107,15 +105,15 @@ window.addEventListener('alpine:init', () => {
                         order: 0
                     }]
                 };
+                
+                // Add row to local data
                 this.rows.push(row);
-                console.log('Updated rows:', this.rows);
+                
+                // Update the hidden input value
                 this.updateCanvasData();
-                console.log('Canvas data:', this.$refs.canvasData.value);
 
-                // Initialize sorting for the new row
-                this.$nextTick(() => {
-                    this.initializeColumnSorting();
-                });
+                // Save to server immediately
+                this.$wire.saveLayout(JSON.stringify(this.rows));
             },
 
             saveRowSettings() {
@@ -138,15 +136,21 @@ window.addEventListener('alpine:init', () => {
                     elements: [],
                     order: row.columns.length
                 };
-
-                row.columns.push(newColumn);
-
-                // Update all column widths
-                row.columns.forEach(column => {
-                    column.width = `w-${Math.floor(12 / row.columns.length)}/12`;
+            
+                // Create a new columns array with updated widths
+                const updatedColumns = [...row.columns, newColumn].map(column => ({
+                    ...column,
+                    width: `w-${Math.floor(12 / (row.columns.length + 1))}/12`
+                }));
+            
+                // Update the row's columns with the new array
+                row.columns = updatedColumns;
+            
+                // Force a re-render using nextTick
+                this.$nextTick(() => {
+                    this.rows = [...this.rows];
+                    this.$wire.saveLayout(JSON.stringify(this.rows));
                 });
-
-                this.$wire.saveLayout(JSON.stringify(this.rows));
             },
 
             updateColumns(newCount) {

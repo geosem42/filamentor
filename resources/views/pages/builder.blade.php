@@ -7,6 +7,16 @@
             @js(\Filament\Support\Facades\FilamentAsset::getScriptSrc('filamentor', 'geosem42/filamentor')),
             @js(\Filament\Support\Facades\FilamentAsset::getScriptSrc('alpine-sort', 'geosem42/filamentor'))
         ]">
+
+            <div class="flex justify-end">
+                <button type="button"
+                    class="bg-primary-500 hover:bg-secondary-500 text-white text-right rounded-lg flex items-center p-2 my-4"
+                    @click="addRow">
+                    <x-heroicon-o-plus-circle class="w-6 h-6 me-1" />
+                    Add Row
+                </button>
+            </div>
+
             <input type="hidden" name="layout" x-ref="canvasData" wire:model="data.layout"
                 value="{{ $this->record->layout }}">
 
@@ -33,16 +43,21 @@
                         </div>
 
                         <div class="columns-container flex gap-2 w-full mt-2" 
-                            :id="'columns-' + row.id"
+                            :id="'columns-' + row . id" 
                             x-data="{ 
                                 columns: row.columns,
                                 getColumn(index) {
                                     return this.columns[index] || {};
+                                },
+                                init() {
+                                    this.$watch('row.columns', value => {
+                                        this.columns = value;
+                                    });
                                 }
-                            }"
-                            x-effect="$nextTick(() => { columns = [...columns] })"
+                            }" 
+                            x-effect="$nextTick(() => { columns = [...columns] })" 
                             x-sort="handleSort"
-                            x-sort:group="'columns-' + row.id"
+                            x-sort:group="'columns-' + row.id" 
                             x-sort:config="{ 
                                 animation: 150,
                                 handle: '.column-handle',
@@ -51,8 +66,7 @@
                             }">
                             <template x-for="(column, index) in columns" :key="index">
                                 <div class="column-item flex-1 h-16 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center relative"
-                                    x-sort:item="getColumn(index).id"
-                                    :data-index="index">
+                                    x-sort:item="getColumn(index).id" :data-index="index">
                                     <!-- Column Delete Button - Top Right Corner -->
                                     <button type="button"
                                         class="absolute top-1 right-1 text-red-600 hover:text-red-500 delete-column-button pr-2"
@@ -69,8 +83,10 @@
                                         <template x-if="getColumn(index).elements?.length > 0">
                                             <div class="flex items-center gap-2">
                                                 {{-- <div class="text-xs text-gray-500 dark:text-gray-400"
-                                                    x-text="getColumn(index).elements[0].type.split('\\').pop()"></div> --}}
-                                                <div class="text-content text-xs text-gray-500 dark:text-gray-400" x-html="getColumn(index).elements[0].content.text"></div>
+                                                    x-text="getColumn(index).elements[0].type.split('\\').pop()"></div>
+                                                --}}
+                                                <div class="text-content text-xs text-gray-500 dark:text-gray-400"
+                                                x-html="(getColumn(index).elements[0].content?.text || 'Click to edit text').substring(0, 5) + '...'"></div>
                                                 <button type="button" class="text-primary-600 hover:text-primary-500"
                                                     @click="editElement(row, index)">
                                                     <x-heroicon-o-pencil class="w-4 h-4" />
@@ -101,12 +117,6 @@
                 </template>
 
             </div>
-
-            <button type="button"
-                class="mt-4 w-full bg-primary-500 text-white rounded-lg p-4 text-center hover:bg-primary-600"
-                @click="addRow">
-                Add Row
-            </button>
 
             <div class="mt-4 flex justify-end">
                 <x-filament::button type="submit" @click="console.log('Save button clicked!', $refs.canvasData.value)">

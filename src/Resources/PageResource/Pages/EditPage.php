@@ -54,21 +54,25 @@ class EditPage extends EditRecord
 
     public function saveLayout($layout)
     {
-        \Log::info('saveLayout test');
-        
         \Log::info('saveLayout received:', [
             'layout type' => gettype($layout),
-            'layout' => $layout
+            'layout raw' => $layout
         ]);
-        
+
+        // Store directly since it's already in the correct format
         $this->record->layout = $layout;
         $this->record->save();
         $this->record->refresh();
-        
+
         \Log::info('saveLayout saved:', [
             'layout type' => gettype($this->record->layout),
-            'layout' => $this->record->layout
+            'layout saved' => $this->record->layout
         ]);
+
+        return [
+            'success' => true,
+            'message' => 'Layout saved successfully'
+        ];
     }
 
     public function reorderColumns($rowId, $columns)
