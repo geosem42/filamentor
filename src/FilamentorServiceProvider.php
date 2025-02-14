@@ -17,6 +17,8 @@ use Geosem42\Filamentor\Commands\FilamentorCommand;
 use Geosem42\Filamentor\Testing\TestsFilamentor;
 use Geosem42\Filamentor\Support\ElementRegistry;
 use Geosem42\Filamentor\Elements\Text;
+use Geosem42\Filamentor\Elements\Image;
+
 class FilamentorServiceProvider extends PackageServiceProvider
 {
     public static string $name = 'filamentor';
@@ -66,6 +68,7 @@ class FilamentorServiceProvider extends PackageServiceProvider
         // Register Elements
         $registry = new ElementRegistry();
         $registry->register(Text::class);
+        $registry->register(Image::class);
         $this->app->instance(ElementRegistry::class, $registry);
         
         $this->publishes([

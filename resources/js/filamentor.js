@@ -238,45 +238,64 @@ window.addEventListener('alpine:init', () => {
             },
 
             addElement(elementType) {
-                // Ensure proper namespace formatting
-                elementType = 'Geosem42\\Filamentor\\Elements\\Text';
-
                 if (this.activeRow && this.activeColumnIndex !== null) {
-                    console.log('Current row state:', JSON.stringify(this.activeRow));
-
+                    // Format the element type with proper namespace slashes
+                    const formattedType = elementType.replace(/Filamentor/, '\\Filamentor\\').replace(/Elements/, 'Elements\\');
+                    
+                    console.log('Adding element of type:', formattedType);
+            
                     this.activeRow.columns[this.activeColumnIndex].elements.push({
-                        type: elementType,
+                        type: formattedType,
                         content: {}
                     });
-
+            
                     console.log('Updated row state:', JSON.stringify(this.activeRow));
                     this.$wire.saveLayout(JSON.stringify(this.rows));
                 }
-            },
+            },            
 
             editElement(row, columnIndex) {
-                console.log('Edit Element clicked:', { row, columnIndex });
-
+                if (!row.columns[columnIndex].elements.length) {
+                    return;
+                }
+            
                 this.activeRow = row;
                 this.activeColumnIndex = columnIndex;
                 this.activeElement = row.columns[columnIndex].elements[0];
-
-                console.log('Active element:', this.activeElement);
-
-                // Set the content specific to this element
-                this.$wire.set('elementContent', this.activeElement.content.text || '');
-                console.log('Element content set:', this.activeElement.content.text || '');
-
-                this.$dispatch('open-modal', { id: 'element-editor-modal' });
+            
+                // Clear previous content
+                this.$wire.set('elementContent', null);
+                
+                // Set content based on element type
+                if (this.activeElement.type.includes('Text')) {
+                    this.$wire.set('elementContent', this.activeElement.content.text || '');
+                } else if (this.activeElement.type.includes('Image')) {
+                    this.$wire.set('elementContent', this.activeElement.content.url || null);
+                }
+            
+                this.$wire.editElement(this.activeElement.type);
+            
+                this.$dispatch('open-modal', { 
+                    id: 'element-editor-modal',
+                    title: `Edit ${this.activeElement.type.split('\\').pop()} Element`
+                });
             },
-
+            
             saveElementContent(content) {
                 if (this.activeElement) {
-                    this.activeElement.content = { text: content };
-                    this.$wire.saveLayout(JSON.stringify(this.rows));
-                    this.$dispatch('close-modal', { id: 'element-editor-modal' });
+                    if (this.activeElement.type.includes('Image')) {
+                        this.$wire.uploadMedia().then(url => {
+                            this.activeElement.content = { url: url };
+                            this.$wire.saveLayout(JSON.stringify(this.rows));
+                            this.$dispatch('close-modal', { id: 'element-editor-modal' });
+                        });
+                    } else {
+                        this.activeElement.content = { text: content };
+                        this.$wire.saveLayout(JSON.stringify(this.rows));
+                        this.$dispatch('close-modal', { id: 'element-editor-modal' });
+                    }
                 }
-            },
+            },                                
 
             deleteElement(row, columnIndex) {
                 row.columns[columnIndex].elements = [];

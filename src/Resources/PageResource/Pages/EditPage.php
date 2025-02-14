@@ -10,11 +10,26 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Toggle;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Forms\Components\FileUpload;
+use Geosem42\Filamentor\Support\ElementRegistry;
+use Geosem42\Filamentor\Contracts\ElementInterface;
+use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
+
 class EditPage extends EditRecord
 {
+    use WithFileUploads;
+
     protected static string $resource = PageResource::class;
     protected static string $view = 'filamentor::pages.builder';
-    public $elementContent = '';
+    protected $listeners = ['editElement'];
+    public $activeElementType = '';
+    public $temporaryUpload;
+    public ?array $media = [];
+    public string $elementContent = '';
+    public ?array $data = null;
 
     public function form(Form $form): Form
     {
@@ -38,36 +53,119 @@ class EditPage extends EditRecord
             ]);
     }
 
-    protected function getFormModel(): Model
+    public function editElement($type)
     {
-        return $this->record;
+        $this->activeElementType = $type;
+        $this->getElementForm();
     }
 
     public function getElementForm(): Form
     {
+        \Log::info('Active Element Type:', ['type' => $this->activeElementType]);
+        
+        $registry = app(ElementRegistry::class);
+        $element = $registry->getElement($this->activeElementType);
+        
+        \Log::info('Element Settings:', [
+            'element' => $element ? get_class($element) : null,
+            'settings' => $element ? $element->getSettings() : null
+        ]);
+
         return Form::make($this)
-            ->schema([
-                RichEditor::make('elementContent')
-                    ->label('Content')
+            ->schema($element ? $this->buildElementFormSchema($element) : []);
+    }
+
+    public function uploadMedia()
+    {
+        if ($this->media) {
+            $file = collect($this->media)->first();
+            
+            // Store original file
+            $path = $file->store('elements', 'public');
+            
+            // Create thumbnails directory if it doesn't exist
+            Storage::disk('public')->makeDirectory('elements/thumbnails');
+            
+            // Generate and store thumbnail
+            $manager = new ImageManager(new Driver());
+            $image = $manager->read($file->getRealPath());
+            $thumbnailPath = 'elements/thumbnails/' . basename($path);
+            
+            $image->cover(100, 100)
+                  ->save(storage_path('app/public/' . $thumbnailPath));
+            
+            $url = Storage::disk('public')->url($path);
+            $thumbnailUrl = Storage::disk('public')->url($thumbnailPath);
+            
+            $this->elementContent = $url;
+            
+            return [
+                'url' => $url,
+                'thumbnail' => $thumbnailUrl
+            ];
+        }
+    }    
+
+    public function saveElementContent($content)
+    {
+        \Log::info('Saving element content', [
+            'content' => $content,
+            'activeElementType' => $this->activeElementType,
+            'media' => $this->media
+        ]);
+    
+        if ($this->activeElementType && str_contains($this->activeElementType, 'Image')) {
+            $path = $content->store('elements', 'public');  // Updated to match FileUpload directory
+            $url = Storage::url($path);
+            
+            \Log::info('Image stored', [
+                'path' => $path,
+                'url' => $url
             ]);
+            
+            return ['url' => $url];
+        }
+        
+        return ['text' => $content];
+    }    
+
+    protected function buildElementFormSchema(ElementInterface $element): array
+    {
+        \Log::info('buildElementFormSchema triggered', [
+            'element_class' => get_class($element),
+            'backtrace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)
+        ]);
+
+        $settings = $element->getSettings();
+        return collect($settings)->map(function ($setting, $key) {
+            \Log::info('Creating form field', [
+                'key' => $key,
+                'type' => $setting['type'],
+                'setting' => $setting
+            ]);
+            return match ($setting['type']) {
+                'file' => FileUpload::make('media')
+                    ->image()
+                    ->imageEditor()
+                    ->directory('elements')
+                    ->label($setting['label'])
+                    ->live()
+                    ->maxFiles(1)
+                    ->disk('public'),
+                'textarea' => RichEditor::make('elementContent')
+                    ->label($setting['label']),
+                'text' => TextInput::make('elementContent')
+                    ->label($setting['label']),
+            };
+        })->toArray();
     }
 
     public function saveLayout($layout)
     {
-        \Log::info('saveLayout received:', [
-            'layout type' => gettype($layout),
-            'layout raw' => $layout
-        ]);
-
         // Store directly since it's already in the correct format
         $this->record->layout = $layout;
         $this->record->save();
         $this->record->refresh();
-
-        \Log::info('saveLayout saved:', [
-            'layout type' => gettype($this->record->layout),
-            'layout saved' => $this->record->layout
-        ]);
 
         return [
             'success' => true,
@@ -77,11 +175,6 @@ class EditPage extends EditRecord
 
     public function reorderColumns($rowId, $columns)
     {
-        \Log::info('reorderColumns starting with:', [
-            'rowId' => $rowId,
-            'columns' => $columns
-        ]);
-    
         // Get current layout
         $layout = json_decode($this->record->layout, true);
     
@@ -92,8 +185,6 @@ class EditPage extends EditRecord
                 break;
             }
         }
-    
-        \Log::info('Updated layout:', ['layout' => $layout]);
     
         // Save the entire layout
         $this->record->layout = json_encode($layout);

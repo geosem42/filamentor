@@ -22,7 +22,7 @@
 
             <div id="rows-container" class="space-y-4 bg-white dark:bg-gray-900 p-4 rounded-lg">
                 <template x-for="(row, index) in rows" :key="row . id + '-' + row . order">
-                    <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded"
+                    <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded"
                         x-init="console.log('Rendering row:', row, 'at index:', index)">
                         <div class="flex items-center mb-3">
                             <!-- Drag Button -->
@@ -73,57 +73,74 @@
                                 ghostClass: 'sortable-ghost'
                             }">
                             <template x-for="(column, index) in columns" :key="index">
-                                <div class="column-item flex-1 h-16 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center relative"
+                                <div class="column-item flex-1 min-h-[120px] border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex flex-col relative"
                                     x-sort:item="getColumn(index).id" :data-index="index">
-                                    <!-- Column Delete Button - Top Right Corner -->
+                                    
+                                    <!-- Column Delete Button -->
                                     <button type="button"
                                         class="absolute top-1 right-1 text-red-600 hover:text-red-500 delete-column-button pr-2"
                                         @click="deleteColumn(row, index)">
                                         <x-heroicon-o-x-mark class="w-4 h-4" />
                                     </button>
-
+                            
+                                    <!-- Column Handle -->
                                     <div class="column-handle cursor-move p-2">
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M8 6h8v2H8V6zm0 5h8v2H8v-2zm0 5h8v2H8v-2z"></path>
-                                        </svg>
+                                        <x-heroicon-o-bars-3 class="w-4 h-4" />
                                     </div>
-                                    <div class="flex items-center justify-center flex-1">
-                                        <template x-if="getColumn(index).elements?.length > 0">
-                                            <div class="flex items-center gap-2">
-                                                {{-- <div class="text-xs text-gray-500 dark:text-gray-400"
-                                                    x-text="getColumn(index).elements[0].type.split('\\').pop()"></div>
-                                                --}}
-                                                <div class="text-content text-xs text-gray-500 dark:text-gray-400"
-                                                x-html="(getColumn(index).elements[0].content?.text || 'Click to edit text').substring(0, 5) + '...'"></div>
-                                                <button type="button" class="text-primary-600 hover:text-primary-500"
-                                                    @click="editElement(row, index)">
-                                                    <x-heroicon-o-pencil class="w-4 h-4" />
-                                                </button>
-                                                <button type="button" class="text-red-600 hover:text-red-500"
-                                                    @click="deleteElement(row, index)">
-                                                    <x-heroicon-o-trash class="w-4 h-4" />
-                                                </button>
+                            
+                                    <!-- Column Content -->
+                                    <div class="flex-1 p-2">
+                                        <template x-if="getColumn(index)['elements']?.length > 0">
+                                            <div class="flex flex-col gap-2 filamentor-border rounded-md p-2">
+                                                <!-- Actions Row -->
+                                                <div class="flex justify-end gap-2">
+                                                    <button type="button" class="text-primary-600 hover:text-primary-500 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                        @click="editElement(row, index)">
+                                                        <x-heroicon-o-pencil class="w-4 h-4" />
+                                                    </button>
+                                                    <button type="button" class="text-red-600 hover:text-red-500 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                        @click="deleteElement(row, index)">
+                                                        <x-heroicon-o-trash class="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                            
+                                                <!-- Preview Area -->
+                                                <div class="bg-white dark:bg-gray-800 rounded p-2">
+                                                    <template x-if="getColumn(index)['elements'][0]['type'].includes('Text')">
+                                                        <div class="text-sm text-gray-600 dark:text-gray-300"
+                                                        x-html="(getColumn(index)['elements'][0]['content']?.text || 'Click to edit text').substring(0, 300) + '...'">
+                                                        </div>
+                                                    </template>
+                                                    
+                                                    <template x-if="getColumn(index)['elements'][0]['type'].includes('Image')">
+                                                        <div class="w-full aspect-video rounded overflow-hidden" 
+                                                            x-html="`<img src='${getColumn(index)['elements'][0]['content']['url']['thumbnail']}' class='w-16 h-16 object-cover' alt='Thumbnail'>`">
+                                                        </div>
+                                                    </template>
+                                                </div>
                                             </div>
                                         </template>
-
+                            
+                                        <!-- Empty State -->
                                         <template x-if="!getColumn(index).elements?.length">
-                                            <span class="text-xs text-gray-500 dark:text-gray-400">
-                                                <svg @click="setActiveColumn(row, index)" class="w-6 h-6 cursor-pointer"
-                                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    stroke-width="1.5" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                                </svg>
-                                            </span>
+                                            <div class="flex items-center justify-center h-full">
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">
+                                                    <svg @click="setActiveColumn(row, index)" class="w-6 h-6 cursor-pointer"
+                                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                        stroke-width="1.5" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                    </svg>
+                                                </span>
+                                            </div>
                                         </template>
                                     </div>
                                 </div>
                             </template>
+                            
                         </div>
-
                     </div>
                 </template>
-
             </div>
 
             {{-- <div class="mt-4 flex justify-end">
@@ -193,12 +210,12 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     @foreach($registry->getElements() as $element)
-                        <button type="button"
-                            class="p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 flex flex-col items-center gap-2"
-                            x-on:click="addElement('{{ get_class($element) }}')">
-                            @svg($element->getIcon(), 'w-8 h-8')
-                            <span class="text-sm">{{ $element->getName() }}</span>
-                        </button>
+                    <button type="button"
+                        class="p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 flex flex-col items-center gap-2"
+                        @click="addElement('{{ get_class($element) }}')">
+                        @svg($element->getIcon(), 'w-8 h-8')
+                        <span class="text-sm">{{ $element->getName() }}</span>
+                    </button>                
                     @endforeach
                 </div>
             </x-filament::modal>

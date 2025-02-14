@@ -1483,16 +1483,24 @@ window.addEventListener("alpine:init", () => {
       this.activeRow = e, this.activeColumnIndex = t, this.$dispatch("open-modal", { id: "element-picker-modal" });
     },
     addElement(e) {
-      e = "Geosem42\\Filamentor\\Elements\\Text", this.activeRow && this.activeColumnIndex !== null && (console.log("Current row state:", JSON.stringify(this.activeRow)), this.activeRow.columns[this.activeColumnIndex].elements.push({
-        type: e,
-        content: {}
-      }), console.log("Updated row state:", JSON.stringify(this.activeRow)), this.$wire.saveLayout(JSON.stringify(this.rows)));
+      if (this.activeRow && this.activeColumnIndex !== null) {
+        const t = e.replace(/Filamentor/, "\\Filamentor\\").replace(/Elements/, "Elements\\");
+        console.log("Adding element of type:", t), this.activeRow.columns[this.activeColumnIndex].elements.push({
+          type: t,
+          content: {}
+        }), console.log("Updated row state:", JSON.stringify(this.activeRow)), this.$wire.saveLayout(JSON.stringify(this.rows));
+      }
     },
     editElement(e, t) {
-      console.log("Edit Element clicked:", { row: e, columnIndex: t }), this.activeRow = e, this.activeColumnIndex = t, this.activeElement = e.columns[t].elements[0], console.log("Active element:", this.activeElement), this.$wire.set("elementContent", this.activeElement.content.text || ""), console.log("Element content set:", this.activeElement.content.text || ""), this.$dispatch("open-modal", { id: "element-editor-modal" });
+      e.columns[t].elements.length && (this.activeRow = e, this.activeColumnIndex = t, this.activeElement = e.columns[t].elements[0], this.$wire.set("elementContent", null), this.activeElement.type.includes("Text") ? this.$wire.set("elementContent", this.activeElement.content.text || "") : this.activeElement.type.includes("Image") && this.$wire.set("elementContent", this.activeElement.content.url || null), this.$wire.editElement(this.activeElement.type), this.$dispatch("open-modal", {
+        id: "element-editor-modal",
+        title: `Edit ${this.activeElement.type.split("\\").pop()} Element`
+      }));
     },
     saveElementContent(e) {
-      this.activeElement && (this.activeElement.content = { text: e }, this.$wire.saveLayout(JSON.stringify(this.rows)), this.$dispatch("close-modal", { id: "element-editor-modal" }));
+      this.activeElement && (this.activeElement.type.includes("Image") ? this.$wire.uploadMedia().then((t) => {
+        this.activeElement.content = { url: t }, this.$wire.saveLayout(JSON.stringify(this.rows)), this.$dispatch("close-modal", { id: "element-editor-modal" });
+      }) : (this.activeElement.content = { text: e }, this.$wire.saveLayout(JSON.stringify(this.rows)), this.$dispatch("close-modal", { id: "element-editor-modal" })));
     },
     deleteElement(e, t) {
       e.columns[t].elements = [], this.$wire.saveLayout(JSON.stringify(this.rows));
