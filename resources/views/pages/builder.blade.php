@@ -40,6 +40,7 @@
                                     return this.columns[index] || {};
                                 }
                             }"
+                            x-effect="$nextTick(() => { columns = [...columns] })"
                             x-sort="handleSort"
                             x-sort:group="'columns-' + row.id"
                             x-sort:config="{ 
@@ -48,8 +49,7 @@
                                 direction: 'horizontal',
                                 ghostClass: 'sortable-ghost'
                             }">
-                            
-                            <template x-for="(column, index) in columns" :key="column.id">
+                            <template x-for="(column, index) in columns" :key="index">
                                 <div class="column-item flex-1 h-16 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center relative"
                                     x-sort:item="getColumn(index).id"
                                     :data-index="index">
@@ -68,8 +68,9 @@
                                     <div class="flex items-center justify-center flex-1">
                                         <template x-if="getColumn(index).elements?.length > 0">
                                             <div class="flex items-center gap-2">
-                                                <div class="text-xs text-gray-500 dark:text-gray-400"
-                                                    x-text="getColumn(index).elements[0].type.split('\\').pop()"></div>
+                                                {{-- <div class="text-xs text-gray-500 dark:text-gray-400"
+                                                    x-text="getColumn(index).elements[0].type.split('\\').pop()"></div> --}}
+                                                <div class="text-content text-xs text-gray-500 dark:text-gray-400" x-html="getColumn(index).elements[0].content.text"></div>
                                                 <button type="button" class="text-primary-600 hover:text-primary-500"
                                                     @click="editElement(row, index)">
                                                     <x-heroicon-o-pencil class="w-4 h-4" />

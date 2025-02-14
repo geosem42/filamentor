@@ -64,96 +64,29 @@ window.addEventListener('alpine:init', () => {
                 const context = Alpine.$data(container);
                 const columns = [...context.columns];
                 
-                // Find the moved item and its current position
-                const movedItemIndex = columns.findIndex(col => col.id === item);
+                const movedItemIndex = columns.findIndex(col => col.id === parseInt(item));
                 const movedItem = columns[movedItemIndex];
                 
-                // Remove from old position and insert at new position
                 columns.splice(movedItemIndex, 1);
                 columns.splice(position, 0, movedItem);
                 
-                // Update orders
                 const updatedColumns = columns.map((col, idx) => ({
                     ...col,
                     order: idx
                 }));
+            
+                // Force reactivity with a temporary empty state
+                context.columns = [];
+                
+                Alpine.nextTick(() => {
+                    context.columns = updatedColumns;
+                });
                 
                 const rowId = container.id.replace('columns-', '');
                 
                 Livewire.find(container.closest('[wire\\:id]').getAttribute('wire:id'))
-                    .call('reorderColumns', rowId, JSON.stringify(updatedColumns))
-                    .then(() => {
-                        Alpine.nextTick(() => {
-                            context.columns = updatedColumns;
-                        });
-                    });
-            },            
-
-            /* initializeColumnSorting() {
-                console.log('=== initializeColumnSorting in filamentor.js ===');
-                
-                const initSortable = (row) => {
-                    const container = document.getElementById('columns-' + row.id);
-                    if (!container) return;
-            
-                    new Sortable(container, {
-                        animation: 150,
-                        handle: '.column-handle',
-                        direction: 'horizontal',
-                        draggable: '.column-item',
-                        ghostClass: 'sortable-ghost',
-                        onStart: (evt) => {
-                            console.log('Drag start:', {
-                                oldIndex: evt.oldIndex,
-                                columnData: row.columns[evt.oldIndex]
-                            });
-                            console.log('Current columns state:', row.columns);
-                        },
-                        onMove: (evt) => {
-                            console.log('During drag:', {
-                                oldIndex: evt.dragged.dataset.index,
-                                newIndex: evt.related?.dataset.index
-                            });
-                            console.log('Current columns state:', row.columns);
-                        },
-                        onEnd: (evt) => {
-                            try {
-                                const newColumns = [...row.columns];
-                                const [movedColumn] = newColumns.splice(evt.oldIndex, 1);
-                                newColumns.splice(evt.newIndex, 0, movedColumn);
-                                
-                                const updatedColumns = newColumns.map((col, idx) => ({
-                                    ...col,
-                                    order: idx
-                                }));
-                                
-                                console.log('Updated Columns', updatedColumns);
-                                
-                                // Update through the row's context
-                                row.columns = updatedColumns;
-                                this.$wire.call('reorderColumns', row.id, JSON.stringify(updatedColumns));
-                            } catch (error) {
-                                console.error('Error in onEnd:', error);
-                                console.log('Row state:', row);
-                                console.log('Container state:', container);
-                            }
-                        }                        
-                    });
-                };
-            
-                // Initialize Sortable for each row
-                this.rows.forEach(row => initSortable(row));
-            
-                // Watch for changes in the rows container
-                const observer = new MutationObserver(() => {
-                    this.rows.forEach(row => initSortable(row));
-                });
-            
-                observer.observe(document.getElementById('rows-container'), { 
-                    childList: true, 
-                    subtree: true 
-                });
-            }, */
+                    .call('reorderColumns', rowId, JSON.stringify(updatedColumns));
+            },
 
             openRowSettings(row) {
                 //console.log('Modal trigger:', { row, showSettings: this.showSettings });
