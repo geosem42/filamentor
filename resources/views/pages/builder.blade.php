@@ -25,10 +25,12 @@
                     <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded"
                         x-init="console.log('Rendering row:', row, 'at index:', index)">
                         <div class="flex items-center mb-3">
+                            <!-- Drag Button -->
                             <div class="row-handle cursor-move mr-2">
                                 <x-heroicon-o-bars-3 class="w-5 h-5 me-3" />
                             </div>
                             <div x-text="`Row ${row.id} (index: ${index}, order: ${row.order})`"></div>
+
                             <!-- Row Settings Button -->
                             <button type="button" class="ml-auto"
                                 @click.stop.prevent="$dispatch('open-modal', { id: 'row-settings-modal' }); openRowSettings(row)">
@@ -39,6 +41,12 @@
                             <button type="button" class="flex items-center justify-center h-16 px-4"
                                 @click="addColumn(row)">
                                 <x-heroicon-o-plus class="w-5 h-5" />
+                            </button>
+
+                            <!-- Delete Row Button -->
+                            <button type="button"
+                                @click="deleteRow(row)">
+                                <x-heroicon-o-x-mark class="w-5 h-5 text-red-500 hover:text-red-600" />
                             </button>
                         </div>
 
@@ -118,11 +126,11 @@
 
             </div>
 
-            <div class="mt-4 flex justify-end">
+            {{-- <div class="mt-4 flex justify-end">
                 <x-filament::button type="submit" @click="console.log('Save button clicked!', $refs.canvasData.value)">
                     Save page
                 </x-filament::button>
-            </div>
+            </div> --}}
 
             <!-- Settings Panel -->
             <x-filament::modal id="row-settings-modal" slide-over width="md">
@@ -212,25 +220,26 @@
                 </div>
             </x-filament::modal>
 
-            <!-- Reduce Columns Confirmation Modal -->
-            <x-filament::modal id="confirm-column-reduction">
+            <!-- Delete Row Confirmation Modal -->
+            <x-filament::modal id="confirm-row-deletion">
                 <x-slot name="heading">
-                    Reduce Columns
+                    Delete Row
                 </x-slot>
 
                 <div class="py-4">
-                    <p>Reducing columns will remove content from the extra columns. Would you like to proceed?</p>
+                    <p>This row contains elements that will be permanently deleted. Would you like to proceed?</p>
                 </div>
 
                 <x-slot name="footer">
                     <div class="flex gap-x-4">
                         <x-filament::button type="button" color="gray"
-                            @click="$dispatch('close-modal', { id: 'confirm-column-reduction' }); event.target.value = activeRow.columns.length;">
+                            @click="$dispatch('close-modal', { id: 'confirm-row-deletion' })">
                             Cancel
                         </x-filament::button>
 
-                        <x-filament::button type="button" color="danger" @click="confirmColumnReduction()">
-                            Confirm
+                        <x-filament::button type="button" color="danger" 
+                            @click="confirmRowDeletion()">
+                            Delete
                         </x-filament::button>
                     </div>
                 </x-slot>

@@ -17,6 +17,7 @@ window.addEventListener('alpine:init', () => {
             activeColumnIndex: null,
             activeElement: null,
             activeElementIndex: null,
+            rowToDelete: null,
 
             init() {
                 this.rows = this.$wire.get('data');
@@ -87,10 +88,8 @@ window.addEventListener('alpine:init', () => {
             },
 
             openRowSettings(row) {
-                //console.log('Modal trigger:', { row, showSettings: this.showSettings });
                 this.activeRow = row;
                 this.showSettings = true;
-                //console.log('After trigger:', { row: this.activeRow, showSettings: this.showSettings });
             },
 
             addRow() {
@@ -114,6 +113,36 @@ window.addEventListener('alpine:init', () => {
 
                 // Save to server immediately
                 this.$wire.saveLayout(JSON.stringify(this.rows));
+            },
+
+            deleteRow(row) {
+                const hasElements = row.columns.some(col => col.elements && col.elements.length > 0);
+                
+                if (hasElements) {
+                    this.rowToDelete = row;
+                    this.$dispatch('open-modal', { id: 'confirm-row-deletion' });
+                } else {
+                    this.performRowDeletion(row);
+                }
+            },
+            
+            confirmRowDeletion() {
+                this.performRowDeletion(this.rowToDelete);
+                this.$dispatch('close-modal', { id: 'confirm-row-deletion' });
+                this.rowToDelete = null;
+            },
+            
+            performRowDeletion(row) {
+                const index = this.rows.findIndex(r => r.id === row.id);
+                if (index > -1) {
+                    this.rows.splice(index, 1);
+                    // Update remaining rows order
+                    this.rows = this.rows.map((row, index) => ({
+                        ...row,
+                        order: index
+                    }));
+                    this.$wire.saveLayout(JSON.stringify(this.rows));
+                }
             },
 
             saveRowSettings() {
