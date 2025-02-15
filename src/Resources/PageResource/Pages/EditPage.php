@@ -108,24 +108,6 @@ class EditPage extends EditRecord
 
     public function saveElementContent($content)
     {
-        \Log::info('Saving element content', [
-            'content' => $content,
-            'activeElementType' => $this->activeElementType,
-            'media' => $this->media
-        ]);
-    
-        if ($this->activeElementType && str_contains($this->activeElementType, 'Image')) {
-            $path = $content->store('elements', 'public');  // Updated to match FileUpload directory
-            $url = Storage::url($path);
-            
-            \Log::info('Image stored', [
-                'path' => $path,
-                'url' => $url
-            ]);
-            
-            return ['url' => $url];
-        }
-        
         return ['text' => $content];
     }    
 

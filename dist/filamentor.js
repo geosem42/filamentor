@@ -1492,14 +1492,28 @@ window.addEventListener("alpine:init", () => {
       }
     },
     editElement(e, t) {
-      e.columns[t].elements.length && (this.activeRow = e, this.activeColumnIndex = t, this.activeElement = e.columns[t].elements[0], this.$wire.set("elementContent", null), this.activeElement.type.includes("Text") ? this.$wire.set("elementContent", this.activeElement.content.text || "") : this.activeElement.type.includes("Image") && this.$wire.set("elementContent", this.activeElement.content.url || null), this.$wire.editElement(this.activeElement.type), this.$dispatch("open-modal", {
-        id: "element-editor-modal",
-        title: `Edit ${this.activeElement.type.split("\\").pop()} Element`
-      }));
+      var n, i;
+      if (e.columns[t].elements.length) {
+        if (this.activeRow = e, this.activeColumnIndex = t, this.activeElement = e.columns[t].elements[0], this.$wire.set("elementContent", null), this.activeElement.type.includes("Text"))
+          this.$wire.set("elementContent", this.activeElement.content.text || "");
+        else if (this.activeElement.type.includes("Image")) {
+          const o = ((i = (n = this.activeElement.content) == null ? void 0 : n.url) == null ? void 0 : i.url) || null;
+          this.$wire.set("elementContent", o);
+        }
+        this.$wire.editElement(this.activeElement.type), this.$dispatch("open-modal", {
+          id: "element-editor-modal",
+          title: `Edit ${this.activeElement.type.split("\\").pop()} Element`
+        });
+      }
     },
     saveElementContent(e) {
       this.activeElement && (this.activeElement.type.includes("Image") ? this.$wire.uploadMedia().then((t) => {
-        this.activeElement.content = { url: t }, this.$wire.saveLayout(JSON.stringify(this.rows)), this.$dispatch("close-modal", { id: "element-editor-modal" });
+        this.activeElement.content = {
+          url: {
+            url: t.url,
+            thumbnail: t.thumbnail
+          }
+        }, this.$wire.saveLayout(JSON.stringify(this.rows)), this.$dispatch("close-modal", { id: "element-editor-modal" });
       }) : (this.activeElement.content = { text: e }, this.$wire.saveLayout(JSON.stringify(this.rows)), this.$dispatch("close-modal", { id: "element-editor-modal" })));
     },
     deleteElement(e, t) {

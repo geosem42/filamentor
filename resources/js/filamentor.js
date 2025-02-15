@@ -270,8 +270,9 @@ window.addEventListener('alpine:init', () => {
                 if (this.activeElement.type.includes('Text')) {
                     this.$wire.set('elementContent', this.activeElement.content.text || '');
                 } else if (this.activeElement.type.includes('Image')) {
-                    this.$wire.set('elementContent', this.activeElement.content.url || null);
-                }
+                    const imageContent = this.activeElement.content?.url?.url || null;
+                    this.$wire.set('elementContent', imageContent);
+                }                
             
                 this.$wire.editElement(this.activeElement.type);
             
@@ -284,8 +285,13 @@ window.addEventListener('alpine:init', () => {
             saveElementContent(content) {
                 if (this.activeElement) {
                     if (this.activeElement.type.includes('Image')) {
-                        this.$wire.uploadMedia().then(url => {
-                            this.activeElement.content = { url: url };
+                        this.$wire.uploadMedia().then(response => {
+                            this.activeElement.content = {
+                                url: {
+                                    url: response.url,
+                                    thumbnail: response.thumbnail
+                                }
+                            };
                             this.$wire.saveLayout(JSON.stringify(this.rows));
                             this.$dispatch('close-modal', { id: 'element-editor-modal' });
                         });

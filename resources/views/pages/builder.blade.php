@@ -113,10 +113,18 @@
                                                     </template>
                                                     
                                                     <template x-if="getColumn(index)['elements'][0]['type'].includes('Image')">
-                                                        <div class="w-full aspect-video rounded overflow-hidden" 
-                                                            x-html="`<img src='${getColumn(index)['elements'][0]['content']['url']['thumbnail']}' class='w-16 h-16 object-cover' alt='Thumbnail'>`">
+                                                        <div class="w-full aspect-video rounded overflow-hidden">
+                                                            <template x-if="getColumn(index)['elements'][0]['content']?.url?.thumbnail">
+                                                                <div x-html="`<img src='${getColumn(index)['elements'][0]['content']['url']['thumbnail']}' class='w-16 h-16 object-cover' alt='Thumbnail'>`"></div>
+                                                            </template>
+                                                            <template x-if="!getColumn(index)['elements'][0]['content']?.url?.thumbnail">
+                                                                <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                                                    <x-heroicon-o-photo class="w-8 h-8 text-gray-400" />
+                                                                </div>
+                                                            </template>
                                                         </div>
-                                                    </template>
+                                                    </template>                                                    
+                                                    
                                                 </div>
                                             </div>
                                         </template>
