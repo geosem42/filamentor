@@ -73,7 +73,7 @@
                                 ghostClass: 'sortable-ghost'
                             }">
                             <template x-for="(column, index) in columns" :key="index">
-                                <div class="column-item flex-1 min-h-[120px] border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex flex-col relative"
+                                <div class="column-item bg-white dark:bg-gray-900 flex-1 min-h-[120px] border border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex flex-col relative"
                                     x-sort:item="getColumn(index).id" :data-index="index">
                                     
                                     <!-- Column Delete Button -->
@@ -93,21 +93,24 @@
                                         <template x-if="getColumn(index)['elements']?.length > 0">
                                             <div class="flex flex-col gap-2 filamentor-border rounded-md p-2">
                                                 <!-- Actions Row -->
-                                                <div class="flex justify-end gap-2">
-                                                    <button type="button" class="text-primary-600 hover:text-primary-500 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-                                                        @click="editElement(row, index)">
-                                                        <x-heroicon-o-pencil class="w-4 h-4" />
-                                                    </button>
-                                                    <button type="button" class="text-red-600 hover:text-red-500 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-                                                        @click="deleteElement(row, index)">
-                                                        <x-heroicon-o-trash class="w-4 h-4" />
-                                                    </button>
+                                                <div class="flex justify-between gap-2">
+                                                    <div class="text-sm text-gray-600 dark:text-gray-400" x-text="getColumn(index)['elements'][0]['type'].split('\\').pop()"></div>
+                                                    <div>
+                                                        <button type="button" class="text-primary-600 hover:text-primary-500 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                            @click="editElement(row, index)">
+                                                            <x-heroicon-o-pencil class="w-4 h-4" />
+                                                        </button>
+                                                        <button type="button" class="text-red-600 hover:text-red-500 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                            @click="deleteElement(row, index)">
+                                                            <x-heroicon-o-trash class="w-4 h-4" />
+                                                        </button>
+                                                    </div>
                                                 </div>
                             
                                                 <!-- Preview Area -->
                                                 <div class="bg-white dark:bg-gray-800 rounded p-2">
                                                     <template x-if="getColumn(index)['elements'][0]['type'].includes('Text')">
-                                                        <div class="text-sm text-gray-600 dark:text-gray-300"
+                                                        <div class="text-sm text-gray-600 dark:text-gray-400"
                                                         x-html="(getColumn(index)['elements'][0]['content']?.text || 'Click to edit text').substring(0, 300) + '...'">
                                                         </div>
                                                     </template>
