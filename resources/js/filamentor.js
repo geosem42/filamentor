@@ -289,7 +289,8 @@ window.addEventListener('alpine:init', () => {
                             this.activeElement.content = {
                                 url: {
                                     url: response.url,
-                                    thumbnail: response.thumbnail
+                                    thumbnail: response.thumbnail,
+                                    alt: response.alt
                                 }
                             };
                             this.$wire.saveLayout(JSON.stringify(this.rows));

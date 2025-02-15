@@ -1511,7 +1511,8 @@ window.addEventListener("alpine:init", () => {
         this.activeElement.content = {
           url: {
             url: t.url,
-            thumbnail: t.thumbnail
+            thumbnail: t.thumbnail,
+            alt: t.alt
           }
         }, this.$wire.saveLayout(JSON.stringify(this.rows)), this.$dispatch("close-modal", { id: "element-editor-modal" });
       }) : (this.activeElement.content = { text: e }, this.$wire.saveLayout(JSON.stringify(this.rows)), this.$dispatch("close-modal", { id: "element-editor-modal" })));

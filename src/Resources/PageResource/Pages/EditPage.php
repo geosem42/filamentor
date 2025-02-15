@@ -77,8 +77,14 @@ class EditPage extends EditRecord
 
     public function uploadMedia()
     {
+        \Log::info('Starting uploadMedia', [
+            'media' => $this->media,
+            'elementContent' => $this->elementContent
+        ]);
+
         if ($this->media) {
             $file = collect($this->media)->first();
+            $altText = $this->elementContent;
             
             // Store original file
             $path = $file->store('elements', 'public');
@@ -99,10 +105,17 @@ class EditPage extends EditRecord
             
             $this->elementContent = $url;
             
-            return [
+            $response = [
                 'url' => $url,
-                'thumbnail' => $thumbnailUrl
+                'thumbnail' => $thumbnailUrl,
+                'alt' => $altText,
             ];
+
+            \Log::info('Completed uploadMedia', [
+                'response' => $response
+            ]);
+            
+            return $response;
         }
     }    
 
@@ -113,18 +126,8 @@ class EditPage extends EditRecord
 
     protected function buildElementFormSchema(ElementInterface $element): array
     {
-        \Log::info('buildElementFormSchema triggered', [
-            'element_class' => get_class($element),
-            'backtrace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)
-        ]);
-
         $settings = $element->getSettings();
         return collect($settings)->map(function ($setting, $key) {
-            \Log::info('Creating form field', [
-                'key' => $key,
-                'type' => $setting['type'],
-                'setting' => $setting
-            ]);
             return match ($setting['type']) {
                 'file' => FileUpload::make('media')
                     ->image()
