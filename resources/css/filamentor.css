@@ -6,6 +6,36 @@
     border: 1px solid #3a3a3a;  /* red-700 */
 }
 
+.filamentor-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.filamentor-element-card {
+    background-color: white;
+    border: 1px solid #e2e2e2;
+}
+
+.dark .filamentor-element-card {
+    background-color: #1f2937;
+    border: 1px solid #3a3a3a;
+}
+
+.filamentor-element-card:hover {
+    background-color: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+.dark .filamentor-element-card:hover {
+    background-color: #374151;
+    border-color: #4b5563;
+}
+
+.dark .filamentor-element-card:hover {
+    background-color: #374151;
+    border-color: #4b5563;
+}
 
 .sortable-ghost {
     opacity: 0.5;

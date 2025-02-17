@@ -219,10 +219,10 @@
                     Add Element
                 </x-slot>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="filamentor-grid">
                     @foreach($registry->getElements() as $element)
                     <button type="button"
-                        class="p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 flex flex-col items-center gap-2"
+                        class="filamentor-element-card p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200 focus-visible:outline-none"
                         @click="addElement('{{ get_class($element) }}')">
                         @svg($element->getIcon(), 'w-8 h-8')
                         <span class="text-sm">{{ $element->getName() }}</span>
