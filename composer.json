@@ -1,6 +1,6 @@
 {
     "name": "geosem42/filamentor",
-    "description": "This is my package filamentor",
+    "description": "Page Builder for Filament",
     "keywords": [
         "geosem42",
         "laravel",
@@ -14,7 +14,7 @@
     "license": "MIT",
     "authors": [
         {
-            "name": "George",
+            "name": "George Semaan",
             "email": "geosem042@gmail.com",
             "role": "Developer"
         }
@@ -22,7 +22,8 @@
     "require": {
         "php": "^8.1",
         "filament/filament": "^3.0",
-        "spatie/laravel-package-tools": "^1.15.0"
+        "spatie/laravel-package-tools": "^1.15.0",
+        "intervention/image": "^3.0"
     },
     "require-dev": {
         "nunomaduro/collision": "^7.9",
