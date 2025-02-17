@@ -115,10 +115,15 @@
                                                 <!-- Preview Area -->
                                                 <div class="bg-white dark:bg-gray-800 rounded p-2">
                                                     <template x-if="getColumn(index)['elements'][0]['type'].includes('Text')">
-                                                        <div class="text-sm text-gray-600 dark:text-gray-400"
-                                                        x-html="(getColumn(index)['elements'][0]['content']?.text || 'Click to edit text').substring(0, 300) + '...'">
+                                                        <div class="flex gap-4 items-start">
+                                                            <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 flex items-center justify-center rounded">
+                                                                <x-heroicon-o-pencil class="w-8 h-8 text-gray-400" />
+                                                            </div>
+                                                            <div class="text-sm text-gray-600 dark:text-gray-400 flex-1"
+                                                                x-html="(getColumn(index)['elements'][0]['content']?.text || 'Click to edit text').substring(0, 300) + '...'">
+                                                            </div>
                                                         </div>
-                                                    </template>
+                                                    </template>                                                    
                                                     
                                                     <template x-if="getColumn(index)['elements'][0]['type'].includes('Image')">
                                                         <div class="w-full aspect-video rounded overflow-hidden">
