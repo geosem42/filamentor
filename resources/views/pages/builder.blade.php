@@ -21,6 +21,11 @@
                 value="{{ $this->record->layout }}">
 
             <div id="rows-container" class="space-y-4 bg-white dark:bg-gray-900 p-4 rounded-lg">
+                <template x-if="!rows.length">
+                    <div class="text-center text-sm py-8 text-gray-500 dark:text-gray-400">
+                        Start by adding a row
+                    </div>
+                </template>
                 <template x-for="(row, index) in rows" :key="row . id + '-' + row . order">
                     <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded"
                         x-init="console.log('Rendering row:', row, 'at index:', index)">
@@ -117,16 +122,22 @@
                                                     
                                                     <template x-if="getColumn(index)['elements'][0]['type'].includes('Image')">
                                                         <div class="w-full aspect-video rounded overflow-hidden">
-                                                            <template x-if="getColumn(index)['elements'][0]['content']?.url?.thumbnail">
-                                                                <div x-html="`<img src='${getColumn(index)['elements'][0]['content']['url']['thumbnail']}' class='w-16 h-16 object-cover' alt='Thumbnail'>`"></div>
+                                                            <template x-if="getColumn(index)['elements'][0]['content']?.thumbnail">
+                                                                <div x-html="`<img src='${getColumn(index)['elements'][0]['content']['thumbnail']}' class='w-16 h-16 object-cover' alt='Thumbnail'>`"></div>
                                                             </template>
-                                                            <template x-if="!getColumn(index)['elements'][0]['content']?.url?.thumbnail">
+                                                            <template x-if="!getColumn(index)['elements'][0]['content']?.thumbnail">
                                                                 <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                                                                     <x-heroicon-o-photo class="w-8 h-8 text-gray-400" />
                                                                 </div>
                                                             </template>
                                                         </div>
-                                                    </template>                                                    
+                                                    </template>
+
+                                                    <template x-if="getColumn(index)['elements'][0]['type'].includes('Video')">
+                                                        <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 flex items-center justify-center rounded">
+                                                            <x-heroicon-o-video-camera class="w-8 h-8 text-gray-400" />
+                                                        </div>
+                                                    </template>
                                                     
                                                 </div>
                                             </div>

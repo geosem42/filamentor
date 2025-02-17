@@ -65,11 +65,11 @@ function Me(e, t) {
   return n;
 }
 var Fe = "1.15.2";
-function J(e) {
+function j(e) {
   if (typeof window < "u" && window.navigator)
     return !!/* @__PURE__ */ navigator.userAgent.match(e);
 }
-var U = J(/(?:Trident.*rv[ :]?11\.|msie|iemobile|Windows Phone)/i), Ct = J(/Edge/i), se = J(/firefox/i), Et = J(/safari/i) && !J(/chrome/i) && !J(/android/i), ge = J(/iP(ad|od|hone)/i), ve = J(/chrome/i) && J(/android/i), we = {
+var U = j(/(?:Trident.*rv[ :]?11\.|msie|iemobile|Windows Phone)/i), Ct = j(/Edge/i), se = j(/firefox/i), Et = j(/safari/i) && !j(/chrome/i) && !j(/android/i), ge = j(/iP(ad|od|hone)/i), ve = j(/chrome/i) && j(/android/i), we = {
   capture: !1,
   passive: !1
 };
@@ -469,7 +469,7 @@ function x(e) {
     newDraggableIndex: Z
   }, e));
 }
-var d, D, m, S, at, Mt, _, Q, dt, F, _t, Z, At, O, ut = !1, Xt = !1, Yt = [], ot, Y, jt, Jt, fe, he, wt, st, Dt, Tt = !1, xt = !1, Ft, I, qt = [], Qt = !1, Bt = [], Gt = typeof document < "u", Nt = ge, pe = Ct || U ? "cssFloat" : "float", ze = Gt && !ve && !ge && "draggable" in document.createElement("div"), De = function() {
+var d, D, m, S, at, Mt, _, Q, dt, F, _t, Z, At, O, ut = !1, Xt = !1, Yt = [], ot, Y, Jt, jt, fe, he, wt, st, Dt, Tt = !1, xt = !1, Ft, I, qt = [], Qt = !1, Bt = [], Gt = typeof document < "u", Nt = ge, pe = Ct || U ? "cssFloat" : "float", ze = Gt && !ve && !ge && "draggable" in document.createElement("div"), De = function() {
   if (Gt) {
     if (U)
       return !1;
@@ -487,10 +487,10 @@ var d, D, m, S, at, Mt, _, Q, dt, F, _t, Z, At, O, ut = !1, Xt = !1, Yt = [], ot
     return a && (s.clear === "both" || s.clear === c) ? "vertical" : "horizontal";
   }
   return r && (l.display === "block" || l.display === "flex" || l.display === "table" || l.display === "grid" || u >= o && i[pe] === "none" || a && i[pe] === "none" && u + f > o) ? "vertical" : "horizontal";
-}, je = function(t, n, i) {
+}, Je = function(t, n, i) {
   var o = i ? t.left : t.top, r = i ? t.right : t.bottom, a = i ? t.width : t.height, l = i ? n.left : n.top, s = i ? n.right : n.bottom, u = i ? n.width : n.height;
   return o === l || r === s || o + a / 2 === l + u / 2;
-}, Je = function(t, n) {
+}, je = function(t, n) {
   var i;
   return Yt.some(function(o) {
     var r = o[$].options.emptyInsertThreshold;
@@ -532,7 +532,7 @@ Gt && !ve && document.addEventListener("click", function(e) {
 var rt = function(t) {
   if (d) {
     t = t.touches ? t.touches[0] : t;
-    var n = Je(t.clientX, t.clientY);
+    var n = je(t.clientX, t.clientY);
     if (n) {
       var i = {};
       for (var o in t)
@@ -746,7 +746,7 @@ p.prototype = /** @lends Sortable.prototype */
         this._onDragStart(t, !0);
       }
       if (m) {
-        a ? (a.e += f - (jt || 0), a.f += c - (Jt || 0)) : a = {
+        a ? (a.e += f - (Jt || 0), a.f += c - (jt || 0)) : a = {
           a: 1,
           b: 0,
           c: 0,
@@ -755,7 +755,7 @@ p.prototype = /** @lends Sortable.prototype */
           f: c
         };
         var g = "matrix(".concat(a.a, ",").concat(a.b, ",").concat(a.c, ",").concat(a.d, ",").concat(a.e, ",").concat(a.f, ")");
-        h(m, "webkitTransform", g), h(m, "mozTransform", g), h(m, "msTransform", g), h(m, "transform", g), jt = f, Jt = c, Y = r;
+        h(m, "webkitTransform", g), h(m, "mozTransform", g), h(m, "msTransform", g), h(m, "transform", g), Jt = f, jt = c, Y = r;
       }
       t.cancelable && t.preventDefault();
     }
@@ -852,16 +852,16 @@ p.prototype = /** @lends Sortable.prototype */
           return z(), n.insertBefore(d, et), D = n, X(), A(!0);
       } else if (i.parentNode === n) {
         r = C(i);
-        var H = 0, nt, ht = d.parentNode !== n, R = !je(d.animated && d.toRect || o, i.animated && i.toRect || r, y), pt = y ? "top" : "left", V = de(i, "top", "top") || de(d, "top", "top"), mt = V ? V.scrollTop : void 0;
+        var H = 0, nt, ht = d.parentNode !== n, R = !Je(d.animated && d.toRect || o, i.animated && i.toRect || r, y), pt = y ? "top" : "left", V = de(i, "top", "top") || de(d, "top", "top"), mt = V ? V.scrollTop : void 0;
         st !== i && (nt = r[pt], Tt = !1, xt = !R && l.invertSwap || ht), H = Qe(t, i, r, y, R ? 1 : l.swapThreshold, l.invertedSwapThreshold == null ? l.swapThreshold : l.invertedSwapThreshold, xt, st === i);
-        var j;
+        var J;
         if (H !== 0) {
           var it = k(d);
           do
-            it -= H, j = D.children[it];
-          while (j && (h(j, "display") === "none" || j === m));
+            it -= H, J = D.children[it];
+          while (J && (h(J, "display") === "none" || J === m));
         }
-        if (H === 0 || j === i)
+        if (H === 0 || J === i)
           return A(!1);
         st = i, Dt = H;
         var gt = i.nextElementSibling, K = !1;
@@ -940,7 +940,7 @@ p.prototype = /** @lends Sortable.prototype */
   _nulling: function() {
     N("nulling", this), S = d = D = m = at = _ = Mt = Q = ot = Y = wt = F = Z = dt = _t = st = Dt = O = At = p.dragged = p.ghost = p.clone = p.active = null, Bt.forEach(function(t) {
       t.checked = !0;
-    }), Bt.length = jt = Jt = 0;
+    }), Bt.length = Jt = jt = 0;
   },
   handleEvent: function(t) {
     switch (t.type) {
@@ -1202,11 +1202,11 @@ var Zt = ye(function(e, t, n, i) {
     do {
       var y = g, v = C(y), E = v.top, L = v.bottom, z = v.left, A = v.right, X = v.width, P = v.height, et = void 0, H = void 0, nt = y.scrollWidth, ht = y.scrollHeight, R = h(y), pt = y.scrollLeft, V = y.scrollTop;
       y === s ? (et = X < nt && (R.overflowX === "auto" || R.overflowX === "scroll" || R.overflowX === "visible"), H = P < ht && (R.overflowY === "auto" || R.overflowY === "scroll" || R.overflowY === "visible")) : (et = X < nt && (R.overflowX === "auto" || R.overflowX === "scroll"), H = P < ht && (R.overflowY === "auto" || R.overflowY === "scroll"));
-      var mt = et && (Math.abs(A - o) <= a && pt + X < nt) - (Math.abs(z - o) <= a && !!pt), j = H && (Math.abs(L - r) <= a && V + P < ht) - (Math.abs(E - r) <= a && !!V);
+      var mt = et && (Math.abs(A - o) <= a && pt + X < nt) - (Math.abs(z - o) <= a && !!pt), J = H && (Math.abs(L - r) <= a && V + P < ht) - (Math.abs(E - r) <= a && !!V);
       if (!T[c])
         for (var it = 0; it <= c; it++)
           T[it] || (T[it] = {});
-      (T[c].vx != mt || T[c].vy != j || T[c].el !== y) && (T[c].el = y, T[c].vx = mt, T[c].vy = j, clearInterval(T[c].pid), (mt != 0 || j != 0) && (u = !0, T[c].pid = setInterval((function() {
+      (T[c].vx != mt || T[c].vy != J || T[c].el !== y) && (T[c].el = y, T[c].vx = mt, T[c].vy = J, clearInterval(T[c].pid), (mt != 0 || J != 0) && (u = !0, T[c].pid = setInterval((function() {
         i && this.layer === 0 && p.active._onTouchMove(Ht);
         var gt = T[this.layer].vy ? T[this.layer].vy * l : 0, K = T[this.layer].vx ? T[this.layer].vx * l : 0;
         typeof f == "function" && f.call(p.dragged.parentNode[$], K, gt, e, Ht, T[this.layer].el) !== "continue" || Ee(T[this.layer].el, K, gt);
@@ -1492,14 +1492,14 @@ window.addEventListener("alpine:init", () => {
       }
     },
     editElement(e, t) {
-      var n, i;
+      var n;
       if (e.columns[t].elements.length) {
         if (this.activeRow = e, this.activeColumnIndex = t, this.activeElement = e.columns[t].elements[0], this.$wire.set("elementContent", null), this.activeElement.type.includes("Text"))
           this.$wire.set("elementContent", this.activeElement.content.text || "");
         else if (this.activeElement.type.includes("Image")) {
-          const o = ((i = (n = this.activeElement.content) == null ? void 0 : n.url) == null ? void 0 : i.url) || null;
-          this.$wire.set("elementContent", o);
-        }
+          const i = ((n = this.activeElement.content) == null ? void 0 : n.url) || null;
+          this.$wire.set("elementContent", i);
+        } else this.activeElement.type.includes("Video") && this.$wire.set("elementContent", this.activeElement.content.url || "");
         this.$wire.editElement(this.activeElement.type), this.$dispatch("open-modal", {
           id: "element-editor-modal",
           title: `Edit ${this.activeElement.type.split("\\").pop()} Element`
@@ -1509,13 +1509,11 @@ window.addEventListener("alpine:init", () => {
     saveElementContent(e) {
       this.activeElement && (this.activeElement.type.includes("Image") ? this.$wire.uploadMedia().then((t) => {
         this.activeElement.content = {
-          url: {
-            url: t.url,
-            thumbnail: t.thumbnail,
-            alt: t.alt
-          }
+          url: t.url,
+          thumbnail: t.thumbnail,
+          alt: t.alt
         }, this.$wire.saveLayout(JSON.stringify(this.rows)), this.$dispatch("close-modal", { id: "element-editor-modal" });
-      }) : (this.activeElement.content = { text: e }, this.$wire.saveLayout(JSON.stringify(this.rows)), this.$dispatch("close-modal", { id: "element-editor-modal" })));
+      }) : this.activeElement.type.includes("Video") ? (this.activeElement.content = { url: e }, this.$wire.saveLayout(JSON.stringify(this.rows)), this.$dispatch("close-modal", { id: "element-editor-modal" })) : (this.activeElement.content = { text: e }, this.$wire.saveLayout(JSON.stringify(this.rows)), this.$dispatch("close-modal", { id: "element-editor-modal" })));
     },
     deleteElement(e, t) {
       e.columns[t].elements = [], this.$wire.saveLayout(JSON.stringify(this.rows));

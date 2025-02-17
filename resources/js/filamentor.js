@@ -270,9 +270,11 @@ window.addEventListener('alpine:init', () => {
                 if (this.activeElement.type.includes('Text')) {
                     this.$wire.set('elementContent', this.activeElement.content.text || '');
                 } else if (this.activeElement.type.includes('Image')) {
-                    const imageContent = this.activeElement.content?.url?.url || null;
+                    const imageContent = this.activeElement.content?.url || null;
                     this.$wire.set('elementContent', imageContent);
-                }                
+                } else if (this.activeElement.type.includes('Video')) {
+                    this.$wire.set('elementContent', this.activeElement.content.url || '');
+                }
             
                 this.$wire.editElement(this.activeElement.type);
             
@@ -287,15 +289,17 @@ window.addEventListener('alpine:init', () => {
                     if (this.activeElement.type.includes('Image')) {
                         this.$wire.uploadMedia().then(response => {
                             this.activeElement.content = {
-                                url: {
-                                    url: response.url,
-                                    thumbnail: response.thumbnail,
-                                    alt: response.alt
-                                }
+                                url: response.url,
+                                thumbnail: response.thumbnail,
+                                alt: response.alt
                             };
                             this.$wire.saveLayout(JSON.stringify(this.rows));
                             this.$dispatch('close-modal', { id: 'element-editor-modal' });
                         });
+                    } else if (this.activeElement.type.includes('Video')) {
+                        this.activeElement.content = { url: content };
+                        this.$wire.saveLayout(JSON.stringify(this.rows));
+                        this.$dispatch('close-modal', { id: 'element-editor-modal' });
                     } else {
                         this.activeElement.content = { text: content };
                         this.$wire.saveLayout(JSON.stringify(this.rows));
