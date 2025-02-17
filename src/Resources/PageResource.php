@@ -7,7 +7,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use geosem42\Filamentor\Models\Page;
+use Geosem42\Filamentor\Models\Page;
 use Illuminate\Support\Str;
 
 class PageResource extends Resource
