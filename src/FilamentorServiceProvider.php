@@ -18,6 +18,7 @@ use Geosem42\Filamentor\Testing\TestsFilamentor;
 use Geosem42\Filamentor\Support\ElementRegistry;
 use Geosem42\Filamentor\Elements\Text;
 use Geosem42\Filamentor\Elements\Image;
+use Geosem42\Filamentor\Elements\Video;
 
 class FilamentorServiceProvider extends PackageServiceProvider
 {
@@ -69,6 +70,7 @@ class FilamentorServiceProvider extends PackageServiceProvider
         $registry = new ElementRegistry();
         $registry->register(Text::class);
         $registry->register(Image::class);
+        $registry->register(Video::class);
         $this->app->instance(ElementRegistry::class, $registry);
         
         $this->publishes([
