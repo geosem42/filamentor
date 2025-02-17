@@ -73,11 +73,21 @@ class FilamentorServiceProvider extends PackageServiceProvider
         $registry->register(Video::class);
         $this->app->instance(ElementRegistry::class, $registry);
         
-        $this->publishes([
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                Commands\InstallFilamentor::class
+            ]);
+        }
+        
+        /* $this->publishes([
             __DIR__ . '/../node_modules/@alpinejs/sort/dist/cdn.min.js' => public_path('js/geosem42/filamentor/alpine-sort.js'),
             __DIR__ . '/../dist/filamentor.js' => public_path('js/geosem42/filamentor/filamentor.js'),
             __DIR__ . '/../dist/filamentor.css' => public_path('css/geosem42/filamentor/filamentor.css'),
         ], 'filamentor-assets');
+
+        $this->publishes([
+            __DIR__ . '/../stubs/PageController.php.stub' => app_path('Http/Controllers/PageController.php'),
+        ], 'filamentor-core'); */
 
         // Asset Registration
         FilamentAsset::register(

@@ -1438,12 +1438,12 @@ window.addEventListener("alpine:init", () => {
     addColumn(e) {
       const t = {
         id: Date.now(),
-        width: `w-${Math.floor(12 / (e.columns.length + 1))}/12`,
+        //width: `col-span-${Math.floor(12 / (row.columns.length + 1))}`,
         elements: [],
         order: e.columns.length
       }, n = [...e.columns, t].map((i) => ({
-        ...i,
-        width: `w-${Math.floor(12 / (e.columns.length + 1))}/12`
+        ...i
+        //width: `col-span-${Math.floor(12 / (row.columns.length + 1))}`
       }));
       e.columns = n, this.$nextTick(() => {
         this.rows = [...this.rows], this.$wire.saveLayout(JSON.stringify(this.rows));
@@ -1457,12 +1457,12 @@ window.addEventListener("alpine:init", () => {
         for (let i = 0; i < n; i++)
           t.push({
             id: Date.now() + i,
-            width: `w-${Math.floor(12 / e)}/12`,
+            //width: `col-span-${Math.floor(12 / newCount)}`,
             elements: [],
             order: t.length
           });
         this.activeRow.columns.forEach((i, o) => {
-          i.width = `w-${Math.floor(12 / e)}/12`, i.order = o;
+          i.order = o;
         }), this.$wire.saveLayout(JSON.stringify(this.rows)).then(() => {
           const i = this.rows.findIndex((o) => o.id === this.activeRow.id);
           i !== -1 && (this.rows[i].columns = t);
@@ -1472,7 +1472,7 @@ window.addEventListener("alpine:init", () => {
     },
     deleteColumn(e, t) {
       if (e.columns.splice(t, 1), e.columns.length > 0) {
-        const n = `w-${Math.floor(12 / e.columns.length)}/12`;
+        const n = `col-span-${Math.floor(12 / e.columns.length)}`;
         e.columns.forEach((i) => {
           i.width = n;
         });

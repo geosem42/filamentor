@@ -161,51 +161,45 @@ window.addEventListener('alpine:init', () => {
             addColumn(row) {
                 const newColumn = {
                     id: Date.now(),
-                    width: `w-${Math.floor(12 / (row.columns.length + 1))}/12`,
+                    //width: `col-span-${Math.floor(12 / (row.columns.length + 1))}`,
                     elements: [],
                     order: row.columns.length
                 };
             
-                // Create a new columns array with updated widths
                 const updatedColumns = [...row.columns, newColumn].map(column => ({
                     ...column,
-                    width: `w-${Math.floor(12 / (row.columns.length + 1))}/12`
+                    //width: `col-span-${Math.floor(12 / (row.columns.length + 1))}`
                 }));
             
-                // Update the row's columns with the new array
                 row.columns = updatedColumns;
             
-                // Force a re-render using nextTick
                 this.$nextTick(() => {
                     this.rows = [...this.rows];
                     this.$wire.saveLayout(JSON.stringify(this.rows));
                 });
             },
-
+            
             updateColumns(newCount) {
                 newCount = parseInt(newCount);
                 const currentColumns = this.activeRow.columns;
-
+            
                 if (newCount > currentColumns.length) {
-                    // Add new columns
                     const columnsToAdd = newCount - currentColumns.length;
                     for (let i = 0; i < columnsToAdd; i++) {
                         currentColumns.push({
                             id: Date.now() + i,
-                            width: `w-${Math.floor(12 / newCount)}/12`,
+                            //width: `col-span-${Math.floor(12 / newCount)}`,
                             elements: [],
                             order: currentColumns.length
                         });
                     }
-
-                    // Update all column widths
+            
                     this.activeRow.columns.forEach((column, index) => {
-                        column.width = `w-${Math.floor(12 / newCount)}/12`;
+                        //column.width = `col-span-${Math.floor(12 / newCount)}`;
                         column.order = index;
                     });
-
+            
                     this.$wire.saveLayout(JSON.stringify(this.rows)).then(() => {
-                        // Update Alpine data to reflect changes
                         const rowIndex = this.rows.findIndex(r => r.id === this.activeRow.id);
                         if (rowIndex !== -1) {
                             this.rows[rowIndex].columns = currentColumns;
@@ -216,20 +210,19 @@ window.addEventListener('alpine:init', () => {
                     this.$dispatch('open-modal', { id: 'confirm-column-reduction' });
                 }
             },
-
+            
             deleteColumn(row, columnIndex) {
                 row.columns.splice(columnIndex, 1);
-
-                // Update remaining columns' widths
+            
                 if (row.columns.length > 0) {
-                    const newWidth = `w-${Math.floor(12 / row.columns.length)}/12`;
+                    const newWidth = `col-span-${Math.floor(12 / row.columns.length)}`;
                     row.columns.forEach(column => {
                         column.width = newWidth;
                     });
                 }
-
+            
                 this.$wire.saveLayout(JSON.stringify(this.rows));
-            },
+            },            
 
             setActiveColumn(row, index) {
                 this.activeRow = row;

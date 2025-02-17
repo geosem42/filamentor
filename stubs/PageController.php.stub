@@ -1,0 +1,19 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Inertia\Inertia;
+use Geosem42\Filamentor\Models\Page;
+
+class PageController extends Controller
+{
+    public function show($slug)
+    {
+        $page = Page::where('slug', $slug)->firstOrFail();
+        
+        return Inertia::render('Page', [
+            'layout' => json_decode($page->layout, true),
+            'title' => $page->title
+        ]);
+    }
+}
