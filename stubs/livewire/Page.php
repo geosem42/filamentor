@@ -7,16 +7,19 @@ use Livewire\Component;
 class Page extends Component
 {
     public $page;
-    public $content;
+    public $layout;
 
     public function mount($page)
     {
         $this->page = $page;
-        $this->content = json_decode($page->content, true);
+        $cleanLayout = trim($page->layout, '"');
+        $this->layout = json_decode($cleanLayout, true);
     }
 
     public function render()
     {
-        return view('livewire.page');
+        return view('livewire.page', [
+            'content' => $this->layout
+        ]);
     }
 }

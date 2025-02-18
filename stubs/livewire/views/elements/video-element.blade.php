@@ -1,6 +1,6 @@
 <div class="video-element">
     <iframe 
-        src="{{ $content['url'] }}" 
+        src="{{ str_replace('watch?v=', 'embed/', $content['url']) }}"
         width="100%" 
         height="{{ $content['height'] ?? '315' }}" 
         frameborder="0" 

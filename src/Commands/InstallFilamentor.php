@@ -71,8 +71,14 @@ class InstallFilamentor extends Command
                 continue;
             }
 
-            // Strip both .stub and .php extensions and add fresh .php
             $baseName = preg_replace('/\.(php|stub)$/', '', $file);
+
+            // Check if migration already exists
+            $existingFiles = glob($to . '/*' . $baseName . '*');
+            if (!empty($existingFiles)) {
+                continue;
+            }
+
             $newFileName = date('Y_m_d_His_') . $baseName;
             copy($from . '/' . $file, $to . '/' . $newFileName);
         }
@@ -100,6 +106,7 @@ class InstallFilamentor extends Command
                 
                 // Livewire Views
                 __DIR__ . '/../../stubs/livewire/views/page.blade.php' => resource_path('views/livewire/page.blade.php'),
+                __DIR__ . '/../../stubs/livewire/views/pages/show.blade.php' => resource_path('views/pages/show.blade.php'),
                 __DIR__ . '/../../stubs/livewire/views/elements/text-element.blade.php' => resource_path('views/livewire/elements/text-element.blade.php'),
                 __DIR__ . '/../../stubs/livewire/views/elements/image-element.blade.php' => resource_path('views/livewire/elements/image-element.blade.php'),
                 __DIR__ . '/../../stubs/livewire/views/elements/video-element.blade.php' => resource_path('views/livewire/elements/video-element.blade.php'),

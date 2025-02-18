@@ -1,12 +1,15 @@
-<div>
+@php
+use Illuminate\Support\Str;
+@endphp
+
+<div class="container mx-auto max-w-7xl">
     @foreach($content as $row)
-        <div class="row">
+        <div class="grid gap-4 mb-4 grid-cols-3">
             @foreach($row['columns'] as $column)
-                <div class="column" style="width: {{ $column['width'] }}%">
+                <div>
                     @foreach($column['elements'] as $element)
-                        @livewire("elements.{$element['type']}-element", 
-                            ['content' => $element['content']], 
-                            key($element['id']))
+                        @livewire(Str::lower(class_basename($element['type'])) . '-element', 
+                            ['content' => $element['content']])
                     @endforeach
                 </div>
             @endforeach

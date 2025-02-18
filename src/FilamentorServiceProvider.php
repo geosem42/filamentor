@@ -19,6 +19,9 @@ use Geosem42\Filamentor\Support\ElementRegistry;
 use Geosem42\Filamentor\Elements\Text;
 use Geosem42\Filamentor\Elements\Image;
 use Geosem42\Filamentor\Elements\Video;
+use Illuminate\Support\Facades\Config;
+use Livewire\Livewire;
+use Illuminate\Support\Str;
 
 class FilamentorServiceProvider extends PackageServiceProvider
 {
@@ -72,6 +75,12 @@ class FilamentorServiceProvider extends PackageServiceProvider
         $registry->register(Image::class);
         $registry->register(Video::class);
         $this->app->instance(ElementRegistry::class, $registry);
+
+        // Register Livewire Components Right Here!
+        Livewire::component('page', \App\Livewire\Page::class);
+        Livewire::component('text-element', \App\Livewire\Elements\TextElement::class);
+        Livewire::component('image-element', \App\Livewire\Elements\ImageElement::class);
+        Livewire::component('video-element', \App\Livewire\Elements\VideoElement::class);
         
         if ($this->app->runningInConsole()) {
             $this->commands([
