@@ -1,17 +1,16 @@
-<script>
-export default {
-    props: {
-        content: {
-            type: Object,
-            required: true
-        }
-    },
-    computed: {
-        videoUrl() {
-            return this.content.url.replace('watch?v=', 'embed/');
-        }
+<script setup>
+import { computed } from 'vue'
+
+const props = defineProps({
+    content: {
+        type: Object,
+        required: true
     }
-}
+})
+
+const videoUrl = computed(() => {
+    return props.content.url.replace('watch?v=', 'embed/')
+})
 </script>
 
 <template>

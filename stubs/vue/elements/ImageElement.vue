@@ -1,12 +1,10 @@
-<script>
-export default {
-    props: {
-        content: {
-            type: Object,
-            required: true
-        }
+<script setup>
+defineProps({
+    content: {
+        type: Object,
+        required: true
     }
-}
+})
 </script>
 
 <template>
