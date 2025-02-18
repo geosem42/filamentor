@@ -12,8 +12,12 @@ class PageController extends Controller
         $page = Page::where('slug', $slug)->firstOrFail();
         
         return Inertia::render('Page', [
+            'title' => $page->title,
+            'description' => $page->description,
             'layout' => json_decode($page->layout, true),
-            'title' => $page->title
+            'is_published' => $page->is_published,
+            'created_at' => $page->created_at,
+            'updated_at' => $page->updated_at,
         ]);
     }
 }

@@ -70,6 +70,7 @@ class InstallFilamentor extends Command
             __DIR__ . '/../../stubs/vue/elements/TextElement.vue' => resource_path('js/Components/Elements/TextElement.vue'),
             __DIR__ . '/../../stubs/vue/elements/ImageElement.vue' => resource_path('js/Components/Elements/ImageElement.vue'),
             __DIR__ . '/../../stubs/vue/elements/VideoElement.vue' => resource_path('js/Components/Elements/VideoElement.vue'),
+            __DIR__ . '/../../stubs/controllers/InertiaPageController.php.stub' => app_path('Http/Controllers/PageController.php'),
         ];
 
         foreach ($components as $from => $to) {

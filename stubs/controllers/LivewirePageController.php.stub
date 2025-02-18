@@ -1,0 +1,22 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Geosem42\Filamentor\Models\Page;
+
+class PageController extends Controller
+{
+    public function show($slug)
+    {
+        $page = Page::where('slug', $slug)->firstOrFail();
+        
+        return view('pages.show', [
+            'title' => $page->title,
+            'description' => $page->description,
+            'layout' => json_decode($page->layout, true),
+            'is_published' => $page->is_published,
+            'created_at' => $page->created_at,
+            'updated_at' => $page->updated_at,
+        ]);
+    }
+}
