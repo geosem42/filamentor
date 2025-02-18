@@ -4,8 +4,8 @@
 
         <div class="filamentor-canvas pt-4" x-data="filamentor" x-effect="console.log('Effect triggered:', rows)"
             x-load-js="[
-            @js(\Filament\Support\Facades\FilamentAsset::getScriptSrc('filamentor', 'geosem42/filamentor')),
-            @js(\Filament\Support\Facades\FilamentAsset::getScriptSrc('alpine-sort', 'geosem42/filamentor'))
+            @js(\Filament\Support\Facades\FilamentAsset::getScriptSrc('filamentor', 'filamentor')),
+            @js(\Filament\Support\Facades\FilamentAsset::getScriptSrc('alpine-sort', 'filamentor'))
         ]">
 
             <div class="flex justify-end">

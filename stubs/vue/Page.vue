@@ -29,7 +29,7 @@ const getElementComponent = (type) => {
     <Head :title="title" />
     <div class="container mx-auto px-4 max-w-7xl">
         <template v-for="row in layout" :key="row.id">
-            <div class="grid gap-4 mb-4 bg-gray-100" :class="{
+            <div class="grid gap-4 mb-4" :class="{
                 'grid-cols-1': row.columns.length === 1,
                 'grid-cols-2': row.columns.length === 2,
                 'grid-cols-3': row.columns.length === 3,
@@ -44,7 +44,7 @@ const getElementComponent = (type) => {
                 'grid-cols-12': row.columns.length === 12
             }">
                 <template v-for="column in row.columns" :key="column.id">
-                    <div class="bg-blue-100 p-4">
+                    <div class="p-4">
                         <component 
                             v-if="column.elements.length"
                             :is="getElementComponent(column.elements[0].type)"

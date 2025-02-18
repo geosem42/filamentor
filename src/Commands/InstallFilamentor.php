@@ -11,16 +11,14 @@ class InstallFilamentor extends Command
 
     public function handle()
     {
+        // Migrations publishing
+        $this->publishMigrations();
+
         // Assets publishing
         $this->publishAssets([
-            __DIR__ . '/../../node_modules/@alpinejs/sort/dist/cdn.min.js' => public_path('js/geosem42/filamentor/alpine-sort.js'),
-            __DIR__ . '/../../dist/filamentor.js' => public_path('js/geosem42/filamentor/filamentor.js'),
-            __DIR__ . '/../../dist/filamentor.css' => public_path('css/geosem42/filamentor/filamentor.css'),
-        ]);
-
-        // Core publishing
-        $this->publishCore([
-            __DIR__ . '/../../stubs/PageController.php.stub' => app_path('Http/Controllers/PageController.php'),
+            __DIR__ . '/../../node_modules/@alpinejs/sort/dist/cdn.min.js' => public_path('js/filamentor/alpine-sort.js'),
+            __DIR__ . '/../../dist/filamentor.js' => public_path('js/filamentor/filamentor.js'),
+            __DIR__ . '/../../dist/filamentor.css' => public_path('css/filamentor/filamentor.css'),
         ]);
 
         // Frontend choice and publishing will come next
@@ -29,11 +27,8 @@ class InstallFilamentor extends Command
             ['Vue', 'Livewire'],
             0
         );
-
-        // Vue components publishing
-        if ($stack === 'Vue') {
-            $this->publishVueComponents();
-        }        
+       
+        $this->publishStackFiles($stack);
 
         // Show next steps
         $this->info('Filamentor installed successfully!');
@@ -45,39 +40,71 @@ class InstallFilamentor extends Command
     {
         $this->info('Publishing assets...');
         foreach ($assets as $from => $to) {
+            if (!file_exists(dirname($to))) {
+                mkdir(dirname($to), 0755, true);
+            }
+
             if (file_exists($from)) {
                 copy($from, $to);
             }
         }
     }
 
-    private function publishCore(array $files)
+    private function publishMigrations()
     {
-        $this->info('Installing core files...');
-        foreach ($files as $from => $to) {
-            if (file_exists($from)) {
-                copy($from, $to);
-            }
-        }
-    }
-
-    private function publishVueComponents()
-    {
-        $this->info('Publishing Vue components...');
+        $this->info('Publishing migrations...');
         
-        $components = [
-            __DIR__ . '/../../stubs/vue/Page.vue' => resource_path('js/Pages/Page.vue'),
-            __DIR__ . '/../../stubs/vue/elements/TextElement.vue' => resource_path('js/Components/Elements/TextElement.vue'),
-            __DIR__ . '/../../stubs/vue/elements/ImageElement.vue' => resource_path('js/Components/Elements/ImageElement.vue'),
-            __DIR__ . '/../../stubs/vue/elements/VideoElement.vue' => resource_path('js/Components/Elements/VideoElement.vue'),
-            __DIR__ . '/../../stubs/controllers/InertiaPageController.php.stub' => app_path('Http/Controllers/PageController.php'),
-        ];
+        $from = __DIR__ . '/../../database/migrations';
+        $to = database_path('migrations');
 
-        foreach ($components as $from => $to) {
+        if (!is_dir($from)) {
+            return;
+        }
+
+        if (!is_dir($to)) {
+            mkdir($to, 0755, true);
+        }
+
+        $files = scandir($from);
+        foreach ($files as $file) {
+            if ($file === '.' || $file === '..') {
+                continue;
+            }
+
+            // Strip both .stub and .php extensions and add fresh .php
+            $baseName = preg_replace('/\.(php|stub)$/', '', $file);
+            $newFileName = date('Y_m_d_His_') . $baseName;
+            copy($from . '/' . $file, $to . '/' . $newFileName);
+        }
+    }
+
+    private function publishStackFiles(string $stack)
+    {
+        $this->info("Publishing {$stack} files...");
+
+        $files = match ($stack) {
+            'Vue' => [
+                __DIR__ . '/../../stubs/vue/Page.vue' => resource_path('js/Pages/Page.vue'),
+                __DIR__ . '/../../stubs/vue/elements/TextElement.vue' => resource_path('js/Components/Elements/TextElement.vue'),
+                __DIR__ . '/../../stubs/vue/elements/ImageElement.vue' => resource_path('js/Components/Elements/ImageElement.vue'),
+                __DIR__ . '/../../stubs/vue/elements/VideoElement.vue' => resource_path('js/Components/Elements/VideoElement.vue'),
+                __DIR__ . '/../../stubs/controllers/InertiaPageController.php.stub' => app_path('Http/Controllers/PageController.php'),
+            ],
+            'Livewire' => [
+                __DIR__ . '/../../stubs/livewire/Page.php' => app_path('Livewire/Page.php'),
+                __DIR__ . '/../../stubs/livewire/elements/TextElement.php' => app_path('Livewire/Elements/TextElement.php'),
+                __DIR__ . '/../../stubs/livewire/elements/ImageElement.php' => app_path('Livewire/Elements/ImageElement.php'),
+                __DIR__ . '/../../stubs/livewire/elements/VideoElement.php' => app_path('Livewire/Elements/VideoElement.php'),
+                __DIR__ . '/../../stubs/controllers/LivewirePageController.php.stub' => app_path('Http/Controllers/PageController.php'),
+            ],
+        };
+
+        foreach ($files as $from => $to) {
             if (!file_exists(dirname($to))) {
                 mkdir(dirname($to), 0755, true);
             }
             copy($from, $to);
         }
     }
+
 }
