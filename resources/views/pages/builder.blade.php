@@ -78,19 +78,25 @@
                                 ghostClass: 'sortable-ghost'
                             }">
                             <template x-for="(column, index) in columns" :key="index">
-                                <div class="column-item bg-white dark:bg-gray-900 flex-1 min-h-[120px] border border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex flex-col relative"
-                                    x-sort:item="getColumn(index).id" :data-index="index">
-                                    
-                                    <!-- Column Delete Button -->
-                                    <button type="button"
-                                        class="absolute top-1 right-1 text-red-600 hover:text-red-500 delete-column-button pr-2"
-                                        @click="deleteColumn(row, index)">
-                                        <x-heroicon-o-x-mark class="w-4 h-4" />
-                                    </button>
+                                <div
+                                    class="column-item bg-white dark:bg-gray-900 flex-1 min-h-[120px] border border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex flex-col">
+                                    <div class="flex justify-between items-center gap-4">
+                                        <!-- Column Handle -->
+                                        <div class="column-handle cursor-move p-2">
+                                            <x-heroicon-o-bars-3 class="w-4 h-4" />
+                                        </div>
+                                        <!-- Button Container -->
+                                        <div class="flex items-center gap-2 justify-end items-center p-2">
+                                            <button type="button" class="settings-column-button"
+                                                @click="openColumnSettings(row, index)">
+                                                <x-heroicon-o-cog class="w-4 h-4" />
+                                            </button>
                             
-                                    <!-- Column Handle -->
-                                    <div class="column-handle cursor-move p-2">
-                                        <x-heroicon-o-bars-3 class="w-4 h-4" />
+                                            <button type="button" class="hover:text-gray-500"
+                                                @click="deleteColumn(row, index)">
+                                                <x-heroicon-o-x-mark class="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </div>
                             
                                     <!-- Column Content -->
@@ -99,13 +105,16 @@
                                             <div class="flex flex-col gap-2 filamentor-border rounded-md p-2">
                                                 <!-- Actions Row -->
                                                 <div class="flex justify-between gap-2">
-                                                    <div class="text-sm text-gray-600 dark:text-gray-400" x-text="getColumn(index)['elements'][0]['type'].split('\\').pop()"></div>
+                                                    <div class="text-sm text-gray-600 dark:text-gray-400"
+                                                        x-text="getColumn(index)['elements'][0]['type'].split('\\').pop()"></div>
                                                     <div>
-                                                        <button type="button" class="text-primary-600 hover:text-primary-500 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                        <button type="button"
+                                                            class="text-primary-600 hover:text-primary-500 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
                                                             @click="editElement(row, index)">
                                                             <x-heroicon-o-pencil class="w-4 h-4" />
                                                         </button>
-                                                        <button type="button" class="text-red-600 hover:text-red-500 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                        <button type="button"
+                                                            class="text-red-600 hover:text-red-500 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
                                                             @click="deleteElement(row, index)">
                                                             <x-heroicon-o-trash class="w-4 h-4" />
                                                         </button>
@@ -116,34 +125,39 @@
                                                 <div class="bg-white dark:bg-gray-800 rounded p-2">
                                                     <template x-if="getColumn(index)['elements'][0]['type'].includes('Text')">
                                                         <div class="flex gap-4 items-start">
-                                                            <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 flex items-center justify-center rounded">
+                                                            <div
+                                                                class="w-16 h-16 bg-gray-100 dark:bg-gray-700 flex items-center justify-center rounded">
                                                                 <x-heroicon-o-pencil class="w-8 h-8 text-gray-400" />
                                                             </div>
                                                             <div class="text-sm text-gray-600 dark:text-gray-400 flex-1"
                                                                 x-html="(getColumn(index)['elements'][0]['content']?.text || 'Click to edit text').substring(0, 300) + '...'">
                                                             </div>
                                                         </div>
-                                                    </template>                                                    
-                                                    
+                                                    </template>
+                            
                                                     <template x-if="getColumn(index)['elements'][0]['type'].includes('Image')">
                                                         <div class="w-full aspect-video rounded overflow-hidden">
                                                             <template x-if="getColumn(index)['elements'][0]['content']?.thumbnail">
-                                                                <div x-html="`<img src='${getColumn(index)['elements'][0]['content']['thumbnail']}' class='w-16 h-16 object-cover' alt='Thumbnail'>`"></div>
+                                                                <div
+                                                                    x-html="`<img src='${getColumn(index)['elements'][0]['content']['thumbnail']}' class='w-16 h-16 object-cover' alt='Thumbnail'>`">
+                                                                </div>
                                                             </template>
                                                             <template x-if="!getColumn(index)['elements'][0]['content']?.thumbnail">
-                                                                <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                                                <div
+                                                                    class="w-16 h-16 bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                                                                     <x-heroicon-o-photo class="w-8 h-8 text-gray-400" />
                                                                 </div>
                                                             </template>
                                                         </div>
                                                     </template>
-
+                            
                                                     <template x-if="getColumn(index)['elements'][0]['type'].includes('Video')">
-                                                        <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 flex items-center justify-center rounded">
+                                                        <div
+                                                            class="w-16 h-16 bg-gray-100 dark:bg-gray-700 flex items-center justify-center rounded">
                                                             <x-heroicon-o-video-camera class="w-8 h-8 text-gray-400" />
                                                         </div>
                                                     </template>
-                                                    
+                            
                                                 </div>
                                             </div>
                                         </template>
@@ -153,8 +167,8 @@
                                             <div class="flex items-center justify-center h-full">
                                                 <span class="text-xs text-gray-500 dark:text-gray-400">
                                                     <svg @click="setActiveColumn(row, index)" class="w-6 h-6 cursor-pointer"
-                                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                        stroke-width="1.5" stroke="currentColor">
+                                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                                        stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                                     </svg>
@@ -164,7 +178,6 @@
                                     </div>
                                 </div>
                             </template>
-                            
                         </div>
                     </div>
                 </template>
@@ -184,7 +197,7 @@
 
                 @inject('registry', 'Geosem42\Filamentor\Support\ElementRegistry')
 
-                <div>
+                {{-- <div>
                     <h3>Available Elements:</h3>
                     @foreach($registry->getElements() as $element)
                         <div class="flex items-center gap-2">
@@ -192,38 +205,190 @@
                             @svg($element->getIcon(), 'w-5 h-5')
                         </div>
                     @endforeach
-                </div>
+                </div> --}}
 
-
-                <div class="space-y-4">
-                    <div x-text="'Editing Row ' + activeRow?.id"></div>
-                    <div class="border-b pb-4">
-                        <h3 class="text-base font-semibold mb-2">Column Layout</h3>
-
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between">
-                                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Columns
-                                </label>
-                                <span class="text-sm text-gray-500"
-                                    x-text="`${activeRow?.columns?.length || 0} columns`"></span>
+                <!-- Spacing Section -->
+                <div class="pb-2">
+                    <h3 class="text-base font-semibold mb-4">Spacing</h3>
+                    
+                    <!-- Padding -->
+                    <div class="mb-4">
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-100 mb-2 block">Padding</label>
+                        <div class="flex">
+                            <div class="flex-1 flex flex-col items-center">
+                                <input type="number" 
+                                    class="w-full text-center rounded-l-lg dark:bg-gray-800 ring-0 focus:ring-0 filamentor-spacing-input filamentor-spacing-input-first"
+                                    x-bind:value="activeRow?.padding?.top || 0"
+                                    @input="activeRow.padding.top = $event.target.value">
+                                <span class="text-xs text-gray-500 mt-1">Top</span>
                             </div>
-
-                            <input type="range" min="1" max="12" class="w-full"
-                                x-bind:value="activeRow?.columns?.length || 1"
-                                @input="updateColumns($event.target.value)">
-
+                            <div class="flex-1 flex flex-col items-center">
+                                <input type="number" 
+                                    class="w-full text-center dark:bg-gray-800 focus:ring-0 filamentor-spacing-input filamentor-spacing-input-middle" 
+                                    x-bind:value="activeRow?.padding?.right || 0"
+                                    @input="activeRow.padding.right = $event.target.value">
+                                <span class="text-xs text-gray-500 mt-1">Right</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center">
+                                <input type="number" 
+                                    class="w-full text-center dark:bg-gray-800 focus:ring-0 filamentor-spacing-input filamentor-spacing-input-middle" 
+                                    x-bind:value="activeRow?.padding?.bottom || 0"
+                                    @input="activeRow.padding.bottom = $event.target.value">
+                                <span class="text-xs text-gray-500 mt-1">Bottom</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center">
+                                <input type="number" 
+                                    class="w-full text-center rounded-r-lg dark:bg-gray-800 focus:ring-0 filamentor-spacing-input filamentor-spacing-input-last" 
+                                    x-bind:value="activeRow?.padding?.left || 0"
+                                    @input="activeRow.padding.left = $event.target.value">
+                                <span class="text-xs text-gray-500 mt-1">Left</span>
+                            </div>
                         </div>
-
                     </div>
 
-                    <div
-                        x-text="activeRow ? 'Current columns: ' + JSON.stringify(activeRow.columns) : 'No row selected'">
+                    <!-- Margin -->
+                    <div class="mb-4">
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-100 mb-2 block">Margin</label>
+                        <div class="flex">
+                            <div class="flex-1 flex flex-col items-center">
+                                <input type="number" 
+                                    class="w-full text-center rounded-l-lg dark:bg-gray-800 ring-0 focus:ring-0 filamentor-spacing-input filamentor-spacing-input-first"
+                                    x-bind:value="activeRow?.margin?.top || 0"
+                                    @input="activeRow.margin.top = $event.target.value">
+                                <span class="text-xs text-gray-500 mt-1">Top</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center">
+                                <input type="number" 
+                                    class="w-full text-center dark:bg-gray-800 focus:ring-0 filamentor-spacing-input filamentor-spacing-input-middle" 
+                                    x-bind:value="activeRow?.margin?.right || 0"
+                                    @input="activeRow.margin.right = $event.target.value">
+                                <span class="text-xs text-gray-500 mt-1">Right</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center">
+                                <input type="number" 
+                                    class="w-full text-center dark:bg-gray-800 focus:ring-0 filamentor-spacing-input filamentor-spacing-input-middle" 
+                                    x-bind:value="activeRow?.margin?.bottom || 0"
+                                    @input="activeRow.margin.bottom = $event.target.value">
+                                <span class="text-xs text-gray-500 mt-1">Bottom</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center">
+                                <input type="number" 
+                                    class="w-full text-center rounded-r-lg dark:bg-gray-800 focus:ring-0 filamentor-spacing-input filamentor-spacing-input-last" 
+                                    x-bind:value="activeRow?.margin?.left || 0"
+                                    @input="activeRow.margin.left = $event.target.value">
+                                <span class="text-xs text-gray-500 mt-1">Left</span>
+                            </div>
+                        </div>
                     </div>
+
+                <!-- Custom Classes -->
+                <div>
+                    <h3 class="text-base font-semibold mb-2">Custom Classes</h3>
+                    <input type="text" class="w-full rounded-lg dark:bg-gray-800 focus:ring-0 filamentor-spacing-input filamentor-spacing-input-first" placeholder="Enter custom classes"
+                        x-bind:value="activeRow?.customClasses || ''"
+                        @input="activeRow.customClasses = $event.target.value">
                 </div>
 
                 <x-slot name="footer">
                     <x-filament::button type="button" @click="saveRowSettings()">
+                        Save Changes
+                    </x-filament::button>
+                </x-slot>
+            </x-filament::modal>
+
+            <!-- Column Settings Modal -->
+            <x-filament::modal id="column-settings-modal" slide-over width="md">
+                <x-slot name="heading">
+                    Column Settings
+                </x-slot>
+
+                <div class="space-y-6">
+                    <!-- Spacing Section -->
+                    <div class="border-b pb-4">
+                        <h3 class="text-base font-semibold mb-4">Spacing</h3>
+                        
+                        <!-- Padding -->
+                        <div class="mb-4">
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-100 mb-2 block">Padding</label>
+                            <div class="flex">
+                                <div class="flex-1 flex flex-col items-center">
+                                    <input type="number" 
+                                        class="w-full text-center rounded-l-lg dark:bg-gray-800 ring-0 focus:ring-0 filamentor-spacing-input filamentor-spacing-input-first"
+                                        x-bind:value="activeRow?.padding?.top || 0"
+                                        @input="activeRow.padding.top = $event.target.value">
+                                    <span class="text-xs text-gray-500 mt-1">Top</span>
+                                </div>
+                                <div class="flex-1 flex flex-col items-center">
+                                    <input type="number" 
+                                        class="w-full text-center dark:bg-gray-800 focus:ring-0 filamentor-spacing-input filamentor-spacing-input-middle" 
+                                        x-bind:value="activeRow?.padding?.right || 0"
+                                        @input="activeRow.padding.right = $event.target.value">
+                                    <span class="text-xs text-gray-500 mt-1">Right</span>
+                                </div>
+                                <div class="flex-1 flex flex-col items-center">
+                                    <input type="number" 
+                                        class="w-full text-center dark:bg-gray-800 focus:ring-0 filamentor-spacing-input filamentor-spacing-input-middle" 
+                                        x-bind:value="activeRow?.padding?.bottom || 0"
+                                        @input="activeRow.padding.bottom = $event.target.value">
+                                    <span class="text-xs text-gray-500 mt-1">Bottom</span>
+                                </div>
+                                <div class="flex-1 flex flex-col items-center">
+                                    <input type="number" 
+                                        class="w-full text-center rounded-r-lg dark:bg-gray-800 focus:ring-0 filamentor-spacing-input filamentor-spacing-input-last" 
+                                        x-bind:value="activeRow?.padding?.left || 0"
+                                        @input="activeRow.padding.left = $event.target.value">
+                                    <span class="text-xs text-gray-500 mt-1">Left</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Margin -->
+                        <div class="mb-4">
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-100 mb-2 block">Margin</label>
+                            <div class="flex">
+                                <div class="flex-1 flex flex-col items-center">
+                                    <input type="number" 
+                                        class="w-full text-center rounded-l-lg dark:bg-gray-800 ring-0 focus:ring-0 filamentor-spacing-input filamentor-spacing-input-first"
+                                        x-bind:value="activeRow?.margin?.top || 0"
+                                        @input="activeRow.margin.top = $event.target.value">
+                                    <span class="text-xs text-gray-500 mt-1">Top</span>
+                                </div>
+                                <div class="flex-1 flex flex-col items-center">
+                                    <input type="number" 
+                                        class="w-full text-center dark:bg-gray-800 focus:ring-0 filamentor-spacing-input filamentor-spacing-input-middle" 
+                                        x-bind:value="activeRow?.margin?.right || 0"
+                                        @input="activeRow.margin.right = $event.target.value">
+                                    <span class="text-xs text-gray-500 mt-1">Right</span>
+                                </div>
+                                <div class="flex-1 flex flex-col items-center">
+                                    <input type="number" 
+                                        class="w-full text-center dark:bg-gray-800 focus:ring-0 filamentor-spacing-input filamentor-spacing-input-middle" 
+                                        x-bind:value="activeRow?.margin?.bottom || 0"
+                                        @input="activeRow.margin.bottom = $event.target.value">
+                                    <span class="text-xs text-gray-500 mt-1">Bottom</span>
+                                </div>
+                                <div class="flex-1 flex flex-col items-center">
+                                    <input type="number" 
+                                        class="w-full text-center rounded-r-lg dark:bg-gray-800 focus:ring-0 filamentor-spacing-input filamentor-spacing-input-last" 
+                                        x-bind:value="activeRow?.margin?.left || 0"
+                                        @input="activeRow.margin.left = $event.target.value">
+                                    <span class="text-xs text-gray-500 mt-1">Left</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Custom Classes -->
+                    <div>
+                        <h3 class="text-base font-semibold mb-2">Custom Classes</h3>
+                        <input type="text" class="w-full rounded-lg dark:bg-gray-800 focus:ring-0 filamentor-spacing-input filamentor-spacing-input-first" placeholder="Enter custom classes"
+                            x-bind:value="activeColumn?.customClasses || ''"
+                            @input="activeColumn.customClasses = $event.target.value">
+                    </div>
+                </div>
+
+                <x-slot name="footer">
+                    <x-filament::button type="button" @click="saveColumnSettings()">
                         Save Changes
                     </x-filament::button>
                 </x-slot>

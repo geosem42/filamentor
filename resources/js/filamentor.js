@@ -14,6 +14,7 @@ window.addEventListener('alpine:init', () => {
             rows: [],
             showSettings: false,
             activeRow: null,
+            activeColumn: null,
             activeColumnIndex: null,
             activeElement: null,
             activeElementIndex: null,
@@ -89,17 +90,80 @@ window.addEventListener('alpine:init', () => {
 
             openRowSettings(row) {
                 this.activeRow = row;
+                if (!this.activeRow.padding) this.activeRow.padding = { top: 0, right: 0, bottom: 0, left: 0 };
+                if (!this.activeRow.margin) this.activeRow.margin = { top: 0, right: 0, bottom: 0, left: 0 };
+                if (!this.activeRow.customClasses) this.activeRow.customClasses = '';
                 this.showSettings = true;
             },
+            
+            openColumnSettings(row, columnIndex) {
+                this.activeRow = row;
+                this.activeColumn = row.columns[columnIndex];
+                if (!this.activeColumn.padding) this.activeColumn.padding = {};
+                if (!this.activeColumn.margin) this.activeColumn.margin = {};
+                if (!this.activeColumn.customClasses) this.activeColumn.customClasses = '';
+                this.$dispatch('open-modal', { id: 'column-settings-modal' });
+            },
+
+            saveRowSettings() {
+                const index = this.rows.findIndex(row => row.id === this.activeRow.id);
+                this.rows[index] = {
+                    ...this.activeRow,
+                    padding: {
+                        top: Number(this.activeRow.padding.top) || 0,
+                        right: Number(this.activeRow.padding.right) || 0,
+                        bottom: Number(this.activeRow.padding.bottom) || 0,
+                        left: Number(this.activeRow.padding.left) || 0
+                    },
+                    margin: {
+                        top: Number(this.activeRow.margin.top) || 0,
+                        right: Number(this.activeRow.margin.right) || 0,
+                        bottom: Number(this.activeRow.margin.bottom) || 0,
+                        left: Number(this.activeRow.margin.left) || 0
+                    }
+                };
+            
+                const layoutData = JSON.stringify(this.rows);
+                this.$refs.canvasData.value = layoutData;
+                this.$wire.saveLayout(layoutData);
+                
+                this.$dispatch('close-modal', { id: 'row-settings-modal' });
+            },            
 
             addRow() {
                 console.log('Adding new row');
                 const row = {
                     id: Date.now(),
                     order: this.rows.length,
+                    padding: {
+                        top: 0,
+                        right: 0,
+                        bottom: 0,
+                        left: 0
+                    },
+                    margin: {
+                        top: 0,
+                        right: 0,
+                        bottom: 0,
+                        left: 0
+                    },
+                    customClasses: '',
                     columns: [{
                         id: Date.now() + 1,
                         width: 'w-full',
+                        padding: {
+                            top: 0,
+                            right: 0,
+                            bottom: 0,
+                            left: 0
+                        },
+                        margin: {
+                            top: 0,
+                            right: 0,
+                            bottom: 0,
+                            left: 0
+                        },
+                        customClasses: '',
                         elements: [],
                         order: 0
                     }]
@@ -145,32 +209,23 @@ window.addEventListener('alpine:init', () => {
                 }
             },
 
-            saveRowSettings() {
-                const index = this.rows.findIndex(row => row.id === this.activeRow.id);
-                this.rows[index] = this.activeRow;
-
-                const layoutData = JSON.stringify(this.rows);
-                this.$refs.canvasData.value = layoutData;
-
-                // Call Livewire action to save
-                this.$wire.saveLayout(layoutData);
-
-                console.log('Row settings saved:', this.activeRow);
-            },
-
             addColumn(row) {
                 const newColumn = {
                     id: Date.now(),
                     //width: `col-span-${Math.floor(12 / (row.columns.length + 1))}`,
                     elements: [],
-                    order: row.columns.length
+                    order: row.columns.length,
+                    padding: { top: 0, right: 0, bottom: 0, left: 0 },
+                    margin: { top: 0, right: 0, bottom: 0, left: 0 },
+                    customClasses: ''
                 };
             
-                const updatedColumns = [...row.columns, newColumn].map(column => ({
+                /* const updatedColumns = [...row.columns, newColumn].map(column => ({
                     ...column,
                     //width: `col-span-${Math.floor(12 / (row.columns.length + 1))}`
                 }));
-            
+                row.columns = updatedColumns; */
+                const updatedColumns = [...row.columns, newColumn];
                 row.columns = updatedColumns;
             
                 this.$nextTick(() => {
@@ -178,6 +233,30 @@ window.addEventListener('alpine:init', () => {
                     this.$wire.saveLayout(JSON.stringify(this.rows));
                 });
             },
+
+            saveColumnSettings() {
+                const rowIndex = this.rows.findIndex(row => row.id === this.activeRow.id);
+                const columnIndex = this.activeRow.columns.findIndex(col => col.id === this.activeColumn.id);
+                
+                this.rows[rowIndex].columns[columnIndex] = {
+                    ...this.activeColumn,
+                    padding: {
+                        top: Number(this.activeColumn.padding.top) || 0,
+                        right: Number(this.activeColumn.padding.right) || 0,
+                        bottom: Number(this.activeColumn.padding.bottom) || 0,
+                        left: Number(this.activeColumn.padding.left) || 0
+                    },
+                    margin: {
+                        top: Number(this.activeColumn.margin.top) || 0,
+                        right: Number(this.activeColumn.margin.right) || 0,
+                        bottom: Number(this.activeColumn.margin.bottom) || 0,
+                        left: Number(this.activeColumn.margin.left) || 0
+                    }
+                };
+            
+                this.$wire.saveLayout(JSON.stringify(this.rows));
+                this.$dispatch('close-modal', { id: 'column-settings-modal' });
+            },            
             
             updateColumns(newCount) {
                 newCount = parseInt(newCount);
@@ -190,7 +269,10 @@ window.addEventListener('alpine:init', () => {
                             id: Date.now() + i,
                             //width: `col-span-${Math.floor(12 / newCount)}`,
                             elements: [],
-                            order: currentColumns.length
+                            order: currentColumns.length,
+                            padding: { top: 0, right: 0, bottom: 0, left: 0 },
+                            margin: { top: 0, right: 0, bottom: 0, left: 0 },
+                            customClasses: ''
                         });
                     }
             
