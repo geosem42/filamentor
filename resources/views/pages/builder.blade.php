@@ -56,29 +56,49 @@
                         </div>
 
                         <div class="columns-container flex gap-2 w-full mt-2" 
-                            :id="'columns-' + row . id" 
-                            x-data="{ 
-                                columns: row.columns,
-                                getColumn(index) {
-                                    return this.columns[index] || {};
-                                },
-                                init() {
-                                    this.$watch('row.columns', value => {
-                                        this.columns = value;
-                                    });
-                                }
-                            }" 
-                            x-effect="$nextTick(() => { columns = [...columns] })" 
-                            x-sort="handleSort"
-                            x-sort:group="'columns-' + row.id" 
-                            x-sort:config="{ 
-                                animation: 150,
-                                handle: '.column-handle',
-                                direction: 'horizontal',
-                                ghostClass: 'sortable-ghost'
-                            }">
-                            <template x-for="(column, index) in columns" :key="index">
-                                <div
+                                :id="'columns-container-' + row.id" 
+                                x-data="{ 
+                                    columns: row.columns,
+                                    manager: null,
+                                    getColumn(index) {
+                                        return this.columns[index] || {};
+                                    },
+                                    init() {
+                                        // Initialize manager immediately after DOM is ready
+                                        this.$nextTick(() => {
+                                            this.manager = new ColumnManager(`columns-container-${row.id}`);
+                                            this.manager.init(this.columns);
+                                        });
+                                        
+                                        this.$watch('row.columns', value => {
+                                            this.columns = value;
+                                            // Update manager's columns when they change
+                                            this.manager?.init(value);
+                                        });
+                                    },
+                                    sortConfig() {
+                                        if (!this.manager) {
+                                            this.manager = new ColumnManager(`columns-container-${row.id}`);
+                                            this.manager.init(this.columns);
+                                        }
+                                        return {
+                                            animation: 150,
+                                            handle: '.column-handle',
+                                            direction: 'horizontal',
+                                            ghostClass: 'sortable-ghost',
+                                            onEnd: (evt) => this.manager?.reorder(evt)
+                                        }
+                                    }
+                                }"
+                                x-effect="$nextTick(() => { columns = [...columns] })" 
+                                x-sort
+                                x-sort:group="'columns-container-' + row.id" 
+                                x-sort:config="sortConfig()"
+                            >
+                            <template x-for="(column, index) in columns" :key="column.id + '-' + column.order + '-' + index">
+                                <div :data-column-id="column?.id"
+                                    x-data="{ columnData: column }"
+                                    x-init="console.log('Column data:', columnData)"
                                     class="column-item bg-white dark:bg-gray-900 flex-1 min-h-[120px] border border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex flex-col">
                                     <div class="flex justify-between items-center gap-4">
                                         <!-- Column Handle -->
@@ -422,7 +442,7 @@
                     {{ $this->getElementForm() }}
 
                     <x-slot name="footer">
-                        <x-filament::button type="button" @click="saveElementContent($wire.get('elementContent'))">
+                        <x-filament::button type="button" @click="saveElementContent($wire.get('elementData'))">
                             Save Content
                         </x-filament::button>
                     </x-slot>

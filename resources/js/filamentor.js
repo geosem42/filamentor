@@ -1,7 +1,10 @@
 import '../css/filamentor.css';
+import { ColumnManager } from './ColumnManager';
 import sort from '@alpinejs/sort';
 
 console.log('Filamentor loaded!');
+
+window.ColumnManager = ColumnManager;
 
 window.addEventListener('alpine:init', () => {
     console.log('Alpine init event fired!');
@@ -19,6 +22,11 @@ window.addEventListener('alpine:init', () => {
             activeElement: null,
             activeElementIndex: null,
             rowToDelete: null,
+            elementData: {
+                text: { content: null },
+                image: { url: null, alt: null, thumbnail: null },
+                video: { url: null }
+            },            
 
             init() {
                 this.rows = this.$wire.get('data');
@@ -57,35 +65,6 @@ window.addEventListener('alpine:init', () => {
                         });
                     }
                 });
-            },
-
-            handleSort: (item, position) => {
-                const container = document.querySelector(`[id^="columns-"]`);
-                const context = Alpine.$data(container);
-                const columns = [...context.columns];
-                
-                const movedItemIndex = columns.findIndex(col => col.id === parseInt(item));
-                const movedItem = columns[movedItemIndex];
-                
-                columns.splice(movedItemIndex, 1);
-                columns.splice(position, 0, movedItem);
-                
-                const updatedColumns = columns.map((col, idx) => ({
-                    ...col,
-                    order: idx
-                }));
-            
-                // Force reactivity with a temporary empty state
-                context.columns = [];
-                
-                Alpine.nextTick(() => {
-                    context.columns = updatedColumns;
-                });
-                
-                const rowId = container.id.replace('columns-', '');
-                
-                Livewire.find(container.closest('[wire\\:id]').getAttribute('wire:id'))
-                    .call('reorderColumns', rowId, JSON.stringify(updatedColumns));
             },
 
             openRowSettings(row) {
@@ -314,17 +293,22 @@ window.addEventListener('alpine:init', () => {
 
             addElement(elementType) {
                 if (this.activeRow && this.activeColumnIndex !== null) {
-                    // Format the element type with proper namespace slashes
                     const formattedType = elementType.replace(/Filamentor/, '\\Filamentor\\').replace(/Elements/, 'Elements\\');
                     
-                    console.log('Adding element of type:', formattedType);
+                    let initialContent = {};
+                    if (formattedType.includes('Text')) {
+                        initialContent = { text: '' };
+                    } else if (formattedType.includes('Image')) {
+                        initialContent = { url: null, alt: '', thumbnail: null };
+                    } else if (formattedType.includes('Video')) {
+                        initialContent = { url: '' };
+                    }
             
                     this.activeRow.columns[this.activeColumnIndex].elements.push({
                         type: formattedType,
-                        content: {}
+                        content: initialContent
                     });
             
-                    console.log('Updated row state:', JSON.stringify(this.activeRow));
                     this.$wire.saveLayout(JSON.stringify(this.rows));
                 }
             },            
@@ -334,30 +318,45 @@ window.addEventListener('alpine:init', () => {
                     return;
                 }
             
+                const element = row.columns[columnIndex].elements[0];
+                console.log('Element being edited:', element);
+                console.log('Element type:', element.type);
+                console.log('Element content:', element.content);
+                console.log('Full row data:', row);
+                console.log('Column index:', columnIndex);
+                const elementId = element.id;
                 this.activeRow = row;
                 this.activeColumnIndex = columnIndex;
-                this.activeElement = row.columns[columnIndex].elements[0];
+                this.activeElement = element;
             
-                // Clear previous content
-                this.$wire.set('elementContent', null);
+                // Reset all elementData
+                this.$wire.set('elementData', {
+                    text: { content: null },
+                    image: { url: null, alt: null, thumbnail: null },
+                    video: { url: null }
+                });
                 
-                // Set content based on element type
-                if (this.activeElement.type.includes('Text')) {
-                    this.$wire.set('elementContent', this.activeElement.content.text || '');
-                } else if (this.activeElement.type.includes('Image')) {
-                    const imageContent = this.activeElement.content?.url || null;
-                    this.$wire.set('elementContent', imageContent);
-                } else if (this.activeElement.type.includes('Video')) {
-                    this.$wire.set('elementContent', this.activeElement.content.url || '');
+                // Set content based on element's actual type
+                const elementType = element.type;
+                if (elementType.includes('Text')) {
+                    this.$wire.set('elementData.text.content', element.content.text || '');
+                } else if (elementType.includes('Image')) {
+                    this.$wire.set('elementData.image', {
+                        url: element.content?.url || null,
+                        alt: element.content?.alt || '',
+                        thumbnail: element.content?.thumbnail || null
+                    });
+                } else if (elementType.includes('Video')) {
+                    this.$wire.set('elementData.video.url', element.content?.url || '');
                 }
             
-                this.$wire.editElement(this.activeElement.type);
+                this.$wire.editElement(elementType, element.content, elementId);
             
                 this.$dispatch('open-modal', { 
                     id: 'element-editor-modal',
-                    title: `Edit ${this.activeElement.type.split('\\').pop()} Element`
+                    title: `Edit ${elementType.split('\\').pop()} Element`
                 });
-            },
+            },            
             
             saveElementContent(content) {
                 if (this.activeElement) {
@@ -366,22 +365,26 @@ window.addEventListener('alpine:init', () => {
                             this.activeElement.content = {
                                 url: response.url,
                                 thumbnail: response.thumbnail,
-                                alt: response.alt
+                                alt: this.$wire.get('elementData.image.alt') || ''
                             };
                             this.$wire.saveLayout(JSON.stringify(this.rows));
                             this.$dispatch('close-modal', { id: 'element-editor-modal' });
                         });
                     } else if (this.activeElement.type.includes('Video')) {
-                        this.activeElement.content = { url: content };
+                        this.activeElement.content = { 
+                            url: this.$wire.get('elementData.video.url') 
+                        };
                         this.$wire.saveLayout(JSON.stringify(this.rows));
                         this.$dispatch('close-modal', { id: 'element-editor-modal' });
                     } else {
-                        this.activeElement.content = { text: content };
+                        this.activeElement.content = { 
+                            text: this.$wire.get('elementData.text.content') 
+                        };
                         this.$wire.saveLayout(JSON.stringify(this.rows));
                         this.$dispatch('close-modal', { id: 'element-editor-modal' });
                     }
                 }
-            },                                
+            },                               
 
             deleteElement(row, columnIndex) {
                 row.columns[columnIndex].elements = [];

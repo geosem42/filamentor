@@ -28,8 +28,20 @@ class EditPage extends EditRecord
     public $activeElementType = '';
     public $temporaryUpload;
     public ?array $media = [];
-    public string $elementContent = '';
     public ?array $data = null;
+    public ?array $elementData = [
+        'text' => [
+            'content' => null,
+        ],
+        'image' => [
+            'url' => null,
+            'alt' => null,
+            'thumbnail' => null,
+        ],
+        'video' => [
+            'url' => null,
+        ]
+    ];
 
     public function form(Form $form): Form
     {
@@ -53,11 +65,27 @@ class EditPage extends EditRecord
             ]);
     }
 
-    public function editElement($type)
+    public function editElement($type, $content = null)
     {
         $this->activeElementType = $type;
+        
+        // Initialize and populate element data structure based on type
+        if (str_contains($type, 'Text')) {
+            $this->elementData['text'] = ['content' => $content['text'] ?? null];
+        } elseif (str_contains($type, 'Image')) {
+            $this->elementData['image'] = [
+                'url' => $content['url'] ?? null,
+                'alt' => $content['alt'] ?? null,
+                'thumbnail' => $content['thumbnail'] ?? null
+            ];
+        } elseif (str_contains($type, 'Video')) {
+            $this->elementData['video'] = ['url' => $content['url'] ?? null];
+        }
+        
+        \Log::info('ElementData State:', ['elementData' => $this->elementData]);
+        
         $this->getElementForm();
-    }
+    }    
 
     public function getElementForm(): Form
     {
@@ -77,14 +105,8 @@ class EditPage extends EditRecord
 
     public function uploadMedia()
     {
-        \Log::info('Starting uploadMedia', [
-            'media' => $this->media,
-            'elementContent' => $this->elementContent
-        ]);
-
         if ($this->media) {
             $file = collect($this->media)->first();
-            $altText = $this->elementContent;
             
             // Store original file
             $path = $file->store('elements', 'public');
@@ -98,31 +120,35 @@ class EditPage extends EditRecord
             $thumbnailPath = 'elements/thumbnails/' . basename($path);
             
             $image->cover(100, 100)
-                  ->save(storage_path('app/public/' . $thumbnailPath));
+                ->save(storage_path('app/public/' . $thumbnailPath));
             
             $url = Storage::disk('public')->url($path);
             $thumbnailUrl = Storage::disk('public')->url($thumbnailPath);
             
-            $this->elementContent = $url;
-            
-            $response = [
+            $this->elementData['image'] = [
                 'url' => $url,
                 'thumbnail' => $thumbnailUrl,
-                'alt' => $altText,
+                'alt' => $this->elementData['image']['alt'] ?? '',
             ];
-
-            \Log::info('Completed uploadMedia', [
-                'response' => $response
-            ]);
             
-            return $response;
+            return $this->elementData['image'];
         }
-    }    
+    }
 
     public function saveElementContent($content)
     {
-        return ['text' => $content];
-    }    
+        switch ($this->activeElementType) {
+            case str_contains($this->activeElementType, 'Text'):
+                $this->elementData['text']['content'] = $content;
+                return ['text' => $content];
+            case str_contains($this->activeElementType, 'Video'):
+                $this->elementData['video']['url'] = $content;
+                return ['url' => $content];
+            case str_contains($this->activeElementType, 'Image'):
+                $this->elementData['image']['alt'] = $content;
+                return $this->elementData['image'];
+        }
+    }  
 
     protected function buildElementFormSchema(ElementInterface $element): array
     {
@@ -137,10 +163,13 @@ class EditPage extends EditRecord
                     ->live()
                     ->maxFiles(1)
                     ->disk('public'),
-                'textarea' => RichEditor::make('elementContent')
+                'textarea' => RichEditor::make('elementData.text.content')
                     ->label($setting['label']),
-                'text' => TextInput::make('elementContent')
-                    ->label($setting['label']),
+                'text' => TextInput::make(
+                    str_contains($this->activeElementType, 'Video') 
+                        ? 'elementData.video.url' 
+                        : 'elementData.image.alt'
+                )->label($setting['label']),
             };
         })->toArray();
     }
@@ -160,6 +189,12 @@ class EditPage extends EditRecord
 
     public function reorderColumns($rowId, $columns)
     {
+        \Log::info('Reordering Columns:', [
+            'rowId' => $rowId,
+            'columns' => $columns,
+            'raw_data' => $this->data
+        ]);
+
         // Get current layout
         $layout = json_decode($this->record->layout, true);
     
@@ -175,6 +210,10 @@ class EditPage extends EditRecord
         $this->record->layout = json_encode($layout);
         $this->record->save();
         $this->record->refresh();
+
+        \Log::info('After Reorder:', [
+            'updated_data' => $this->data
+        ]);
     }
     
 }
