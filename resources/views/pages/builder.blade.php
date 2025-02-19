@@ -20,7 +20,34 @@
             <input type="hidden" name="layout" x-ref="canvasData" wire:model="data.layout"
                 value="{{ $this->record->layout }}">
 
-            <div id="rows-container" class="space-y-4 bg-white dark:bg-gray-900 p-4 rounded-lg">
+            <div id="rows-container" class="space-y-4 bg-white dark:bg-gray-900 p-4 rounded-lg"
+                x-data="{
+                    sortConfig() {
+                        return {
+                            animation: 150,
+                            handle: '.row-handle',
+                            direction: 'vertical',
+                            ghostClass: 'sortable-ghost',
+                            swapThreshold: 0.65,
+                            onEnd: (evt) => {
+                                const currentRows = [...this.rows];
+                                const [movedRow] = currentRows.splice(evt.oldIndex, 1);
+                                currentRows.splice(evt.newIndex, 0, movedRow);
+            
+                                const updatedRows = currentRows.map((row, index) => ({
+                                    ...row,
+                                    order: index
+                                }));
+            
+                                this.rows = updatedRows;
+                                this.updateCanvasData();
+                                this.$wire.saveLayout(JSON.stringify(updatedRows));
+                            }
+                        }
+                    }
+                }"
+                x-sort
+                x-sort:config="sortConfig()">
                 <template x-if="!rows.length">
                     <div class="text-center text-sm py-8 text-gray-500 dark:text-gray-400">
                         Start by adding a row

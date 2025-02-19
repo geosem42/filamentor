@@ -38,33 +38,6 @@ window.addEventListener('alpine:init', () => {
                     this.rows = JSON.parse(savedLayout).sort((a, b) => a.order - b.order);
                     console.log('Sorted initial rows:', this.rows);
                 }
-
-                // Row sorting
-                new Sortable(document.getElementById('rows-container'), {
-                    animation: 150,
-                    handle: '.row-handle',
-                    ghostClass: 'sortable-ghost',
-                    onEnd: (evt) => {
-                        console.log('Before reorder:', this.rows);
-
-                        const currentRows = [...this.rows];
-                        const [movedRow] = currentRows.splice(evt.oldIndex, 1);
-                        currentRows.splice(evt.newIndex, 0, movedRow);
-
-                        const updatedRows = currentRows.map((row, index) => ({
-                            ...row,
-                            order: index
-                        }));
-
-                        this.$nextTick(() => {
-                            this.rows = updatedRows;
-                            console.log('After reorder:', this.rows);
-                            this.updateCanvasData();
-                            // Explicitly call the Livewire save action
-                            this.$wire.saveLayout(JSON.stringify(this.rows));
-                        });
-                    }
-                });
             },
 
             openRowSettings(row) {
