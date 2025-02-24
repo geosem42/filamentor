@@ -176,7 +176,6 @@ class EditPage extends EditRecord
 
     public function saveLayout($layout)
     {
-        // Store directly since it's already in the correct format
         $this->record->layout = $layout;
         $this->record->save();
         $this->record->refresh();

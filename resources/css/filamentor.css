@@ -91,3 +91,54 @@ input.filamentor-spacing-input:focus {
 .column-handle:active {
     cursor: grabbing;
 }
+
+.dragging {
+    opacity: 0.5;
+    border: 2px dashed #707070;
+}
+.dark .dragging {
+    opacity: 0.5;
+    border: 2px dashed #d3d3d3;
+}
+
+.drop-target {
+    border: 2px solid #707070;
+    transform: translateY(2px);
+    transition: all 0.2s ease;
+}
+.dark .drop-target {
+    border: 2px solid #d3d3d3;
+    transform: translateY(2px);
+    transition: all 0.2s ease;
+}
+
+.column-droppable {
+    border: 2px dashed #e5e7eb;
+}
+
+.dragging-column {
+    opacity: 0.5;
+    border: 2px dashed #4f46e5 !important;
+}
+
+.drop-target-column {
+    border: 2px solid #4f46e5 !important;
+}
+
+/* Prevent row drop indicators when dragging columns */
+.dragging-column ~ .row-drop-indicator {
+    display: none !important;
+}
+
+/* Simple button hover background effect */
+.filamentor-btn-hover {
+    border-radius: 0.25rem;
+}
+
+.filamentor-btn-hover:hover {
+    background-color: #f3f4f6;
+}
+
+.dark .filamentor-btn-hover:hover {
+    background-color: #374151;
+}
