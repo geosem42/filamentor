@@ -136,7 +136,7 @@ If you selected the Livewire stack, ensure Livewire is properly installed. The p
 
 ### Custom Elements
 
-You can create custom elements by extending the base Element class and registering them with Filamentor. For more information, see the [Custom Elements documentation](https://sourcegraph.com/cody/chat).
+You can create custom elements by extending the base Element class and registering them with Filamentor.
 
 ## Published Files
 
