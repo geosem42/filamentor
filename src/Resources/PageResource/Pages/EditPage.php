@@ -30,6 +30,7 @@ class EditPage extends EditRecord
     protected $listeners = ['editElement'];
     public $activeElementType = '';
     public $temporaryUpload;
+    protected $isLoading = false;
     public ?array $media = [];
     public ?array $data = null;
     public ?array $elementData = [
@@ -104,6 +105,11 @@ class EditPage extends EditRecord
 
     public function editElement($type, $content = null)
     {
+        $this->isLoading = true;
+
+        // Reset element data first
+        $this->resetElementData();
+
         $this->activeElementType = $type;
         
         // Initialize and populate element data structure based on type
@@ -118,6 +124,8 @@ class EditPage extends EditRecord
         } elseif (str_contains($type, 'Video')) {
             $this->elementData['video'] = ['url' => $content['url'] ?? null];
         }
+
+        $this->isLoading = false;
         
         $this->getElementForm();
     }    
@@ -165,18 +173,42 @@ class EditPage extends EditRecord
 
     public function saveElementContent($content)
     {
+        $result = null;
+        
         switch ($this->activeElementType) {
             case str_contains($this->activeElementType, 'Text'):
                 $this->elementData['text']['content'] = $content;
-                return ['text' => $content];
+                $result = ['text' => $content];
+                break;
             case str_contains($this->activeElementType, 'Video'):
                 $this->elementData['video']['url'] = $content;
-                return ['url' => $content];
+                $result = ['url' => $content];
+                break;
             case str_contains($this->activeElementType, 'Image'):
                 $this->elementData['image']['alt'] = $content;
-                return $this->elementData['image'];
+                $result = $this->elementData['image'];
+                break;
         }
-    }  
+        
+        // Clean up the media property after saving
+        $this->media = null;
+        
+        return $result;
+    }
+
+    protected function resetElementData()
+    {
+        $this->media = null;
+        $this->elementData = [
+            'text' => ['content' => null],
+            'image' => [
+                'url' => null,
+                'alt' => null,
+                'thumbnail' => null
+            ],
+            'video' => ['url' => null]
+        ];
+    }
 
     protected function buildElementFormSchema(ElementInterface $element): array
     {
@@ -190,7 +222,23 @@ class EditPage extends EditRecord
                     ->label($setting['label'])
                     ->live()
                     ->maxFiles(1)
-                    ->disk('public'),
+                    ->disk('public')
+                    ->helperText(function() {
+                        if (str_contains($this->activeElementType, 'Image') && !empty($this->elementData['image']['url'])) {
+                            // Create a basic preview with proper HTML
+                            return new \Illuminate\Support\HtmlString(
+                                '<div class="mt-2">
+                                    <p class="text-sm font-medium">Current image:</p>
+                                    <div class="mt-1">
+                                        <img src="' . $this->elementData['image']['url'] . '" 
+                                            alt="Current image" 
+                                            class="w-40 h-auto object-cover rounded-lg border border-gray-200" />
+                                    </div>
+                                </div>'
+                            );
+                        }
+                        return '';
+                    }),
                 'textarea' => RichEditor::make('elementData.text.content')
                     ->label($setting['label']),
                 'text' => TextInput::make(
