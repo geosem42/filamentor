@@ -18,7 +18,7 @@ Filamentor is a powerful, flexible page builder plugin for Laravel Filament that
 ### Prerequisites
 
 - PHP 8.1 or higher
-- Laravel 10.x
+- Laravel 11.x or higher
 - Filament 3.x
 - Tailwind CSS
 
