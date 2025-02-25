@@ -1,6 +1,6 @@
 {
     "name": "geosem42/filamentor",
-    "description": "Page Builder for Filament",
+    "description": "Filamentor - A flexible page builder for Laravel Filament",
     "version": "1.0.0",
     "keywords": [
         "geosem42",
