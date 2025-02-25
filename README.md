@@ -2,6 +2,8 @@
 
 Filamentor is a powerful, flexible page builder plugin for Laravel Filament that empowers you to create dynamic pages with a modern drag-and-drop interface. Build professional layouts without writing code using an intuitive grid-based system.
 
+![Filamentor Screenshot](https://i.imgur.com/hbOquvS.png)
+
 ## Key Features
 
 - **Drag & Drop Interface**: Easily create and arrange content with intuitive drag-and-drop interactions
