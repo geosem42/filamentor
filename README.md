@@ -147,12 +147,6 @@ If you selected the Livewire stack, ensure Livewire is properly installed. The p
 
 For proper SEO functionality with Filamentor's Livewire implementation, your layout must include a `@stack('meta')` directive in the `<head>` section.
 
-## Extending Filamentor
-
-### Custom Elements
-
-You can create custom elements by extending the base Element class and registering them with Filamentor.
-
 ## Published Files
 
 The installation command will publish the following files depending on your selected stack.
