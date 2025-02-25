@@ -131,7 +131,7 @@ The Filamentor page templates (both Vue and Livewire versions) do not come pre-i
 For example:
 
 - In Livewire: Wrap `resources/views/pages/show.blade.php` in your layout.
-- In Vue: Include the Page component within your `AppLayout` layout component.
+- In Vue: Include the `resources/js/Pages/Page.vue` within your `AppLayout` layout component.
 
 This design gives you complete flexibility to integrate Filamentor pages within your existing site structure.
 
