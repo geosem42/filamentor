@@ -2,6 +2,13 @@
     <form wire:submit.prevent="save">
         {{ $this->form }}
 
+        <div class="mt-4 flex justify-end">
+            <x-filament::button wire:click="save">
+                Save page
+            </x-filament::button>
+        </div>
+        
+
         <div class="filamentor-canvas pt-4" x-data="filamentor" x-load-js="[
             @js(\Filament\Support\Facades\FilamentAsset::getScriptSrc('filamentor', 'filamentor')),
             @js(\Filament\Support\Facades\FilamentAsset::getScriptSrc('alpine-sort', 'filamentor'))

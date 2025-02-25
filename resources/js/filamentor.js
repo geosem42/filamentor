@@ -2,13 +2,9 @@ import '../css/filamentor.css';
 import './store';
 import { createDragHandlers } from './dragHandlers';
 
-console.log('Filamentor loaded!');
-
 window.addEventListener('alpine:init', () => {
-    console.log('Alpine init event fired!');
 
     Alpine.data('filamentor', () => {
-        console.log('Component definition called');
         return {
             showSettings: false,
             activeRow: null,
@@ -42,10 +38,8 @@ window.addEventListener('alpine:init', () => {
 
             saveRowSettings() {
                 if (!this.activeRow) return;
-                console.log('Saving row settings:', this.activeRow);
 
                 const index = Alpine.store('rows').items.findIndex(row => row.id === this.activeRow.id);
-                console.log('Found Index:', index);
                 Alpine.store('rows').items[index] = {
                     ...this.activeRow,
                     padding: {
@@ -63,7 +57,6 @@ window.addEventListener('alpine:init', () => {
                 };
             
                 const layoutData = JSON.stringify(Alpine.store('rows').items);
-                console.log('Layout Data:', layoutData);
                 this.$refs.canvasData.value = layoutData;
                 this.$wire.saveLayout(layoutData);
                 
@@ -71,7 +64,6 @@ window.addEventListener('alpine:init', () => {
             },
 
             addRow() {
-                console.log('Adding new row');
                 const row = {
                     id: Date.now(),
                     order: Alpine.store('rows').items.length,
@@ -280,9 +272,6 @@ window.addEventListener('alpine:init', () => {
                 }
             
                 const element = storeRow.columns[columnIndex].elements[elementIndex];
-                console.log('Element being edited:', element);
-                console.log('Element type:', element.type);
-                console.log('Element content:', element.content);
             
                 this.activeRow = storeRow;
                 this.activeColumnIndex = columnIndex;

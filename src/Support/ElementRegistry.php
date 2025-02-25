@@ -20,11 +20,6 @@ class ElementRegistry
 
     public function getElement(string $elementClass)
     {
-        \Log::info('Getting element:', [
-            'requested_class' => $elementClass,
-            'registered_elements' => array_keys($this->elements)
-        ]);
-        
         return $this->elements[$elementClass] ?? null;
     }
 }

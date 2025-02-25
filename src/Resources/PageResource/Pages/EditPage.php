@@ -8,7 +8,9 @@ use Filament\Forms\Form;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Grid;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\FileUpload;
 use Geosem42\Filamentor\Support\ElementRegistry;
@@ -17,6 +19,7 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
+use Illuminate\Support\Str;
 
 class EditPage extends EditRecord
 {
@@ -51,17 +54,51 @@ class EditPage extends EditRecord
                     ->schema([
                         TextInput::make('title')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function (string $operation, $state, callable $set) {
+                                $set('slug', Str::slug($state));
+                            }),
+                            
                         TextInput::make('slug')
                             ->required()
-                            ->maxLength(255),
-                        TextInput::make('description')
-                            ->maxLength(255),
-                        Toggle::make('is_published')
-                            ->label('Published')
-                            ->helperText('Make this page visible to users'),
-                    ])
-                    ->columns(2)
+                            ->maxLength(255)
+                            ->unique(table: 'filamentor_pages', column: 'slug', ignorable: fn ($record) => $record)
+                            ->dehydrated()
+                            ->rules(['alpha_dash'])
+                            ->helperText('The URL-friendly name for your page (auto-generated from title)'),
+                            
+                        Textarea::make('description')
+                            ->maxLength(255)
+                            ->helperText('A brief summary of this page (optional)'),
+                            
+                        Grid::make()
+                            ->schema([
+                                Toggle::make('is_published')
+                                    ->label('Published')
+                                    ->helperText('Make this page visible to users')
+                                    ->default(false),
+                            ]),
+                    ]),
+                    
+                Section::make('SEO Information')
+                    ->schema([
+                        TextInput::make('meta_title')
+                            ->label('Meta Title')
+                            ->helperText('Overrides the default title tag. Recommended length: 50-60 characters')
+                            ->maxLength(60),
+                            
+                        Textarea::make('meta_description')
+                            ->label('Meta Description')
+                            ->helperText('A short description of the page for search engines. Recommended length: 150-160 characters')
+                            ->maxLength(160),
+                            
+                        FileUpload::make('og_image')
+                            ->label('Social Media Image')
+                            ->image()
+                            ->directory('page-social-images')
+                            ->helperText('Used when sharing this page on social media (1200x630 pixels recommended)'),
+                    ]),
             ]);
     }
 
@@ -82,23 +119,14 @@ class EditPage extends EditRecord
             $this->elementData['video'] = ['url' => $content['url'] ?? null];
         }
         
-        \Log::info('ElementData State:', ['elementData' => $this->elementData]);
-        
         $this->getElementForm();
     }    
 
     public function getElementForm(): Form
     {
-        \Log::info('Active Element Type:', ['type' => $this->activeElementType]);
-        
         $registry = app(ElementRegistry::class);
         $element = $registry->getElement($this->activeElementType);
         
-        \Log::info('Element Settings:', [
-            'element' => $element ? get_class($element) : null,
-            'settings' => $element ? $element->getSettings() : null
-        ]);
-
         return Form::make($this)
             ->schema($element ? $this->buildElementFormSchema($element) : []);
     }
@@ -188,12 +216,6 @@ class EditPage extends EditRecord
 
     public function reorderColumns($rowId, $columns)
     {
-        \Log::info('Reordering Columns:', [
-            'rowId' => $rowId,
-            'columns' => $columns,
-            'raw_data' => $this->data
-        ]);
-
         // Get current layout
         $layout = json_decode($this->record->layout, true);
     
@@ -209,10 +231,5 @@ class EditPage extends EditRecord
         $this->record->layout = json_encode($layout);
         $this->record->save();
         $this->record->refresh();
-
-        \Log::info('After Reorder:', [
-            'updated_data' => $this->data
-        ]);
     }
-    
 }

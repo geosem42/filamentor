@@ -3,12 +3,10 @@ document.addEventListener('alpine:init', () => {
         items: [],
         
         init() {
-            console.log('Store initialized');
         },
         
         setRows(rows) {
             this.items = rows;
-            console.log('Rows set in store:', this.items);
         },
 
         getColumn(rowIndex, columnIndex) {
@@ -24,8 +22,6 @@ document.addEventListener('alpine:init', () => {
             if (!evt || typeof evt.newIndex === 'undefined' || typeof evt.oldIndex === 'undefined') {
                 return this.items;
             }
-        
-            console.log('Before reorder:', [...this.items]);
         
             const newIndex = evt.newIndex;
             const oldIndex = evt.oldIndex;
@@ -43,7 +39,6 @@ document.addEventListener('alpine:init', () => {
             // Assign the new array
             this.items = newItems;
         
-            console.log('After reorder:', this.items);
             return this.items;
         },
 
