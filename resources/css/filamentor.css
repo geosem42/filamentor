@@ -118,11 +118,11 @@ input.filamentor-spacing-input:focus {
 
 .dragging-column {
     opacity: 0.5;
-    border: 2px dashed #4f46e5 !important;
+    border: 2px dashed #707070 !important;
 }
 
 .drop-target-column {
-    border: 2px solid #4f46e5 !important;
+    border: 2px solid #707070 !important;
 }
 
 /* Prevent row drop indicators when dragging columns */

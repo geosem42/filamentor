@@ -97,12 +97,6 @@
                                                 <x-heroicon-o-cog class="w-4 h-4" />
                                             </button>
 
-                                            <!-- Add Column-->
-                                            <button type="button" class="p-1 filamentor-btn-hover rounded"
-                                                @click="setActiveColumn(row, columnIndex)">
-                                                <x-heroicon-o-plus class="w-4 h-4" />
-                                            </button>
-
                                             <!-- Delete Column -->
                                             <button type="button" class="p-1 filamentor-btn-hover rounded"
                                                 @click="deleteColumn(row, columnIndex)">
@@ -477,6 +471,30 @@
                             </x-filament::button>
 
                             <x-filament::button type="button" color="danger" @click="confirmRowDeletion()">
+                                Delete
+                            </x-filament::button>
+                        </div>
+                    </x-slot>
+                </x-filament::modal>
+
+                <!-- Delete Column Confirmation Modal -->
+                <x-filament::modal id="confirm-column-deletion">
+                    <x-slot name="heading">
+                        Delete Column
+                    </x-slot>
+
+                    <div class="py-4">
+                        <p>This column contains elements that will be permanently deleted. Would you like to proceed?</p>
+                    </div>
+
+                    <x-slot name="footer">
+                        <div class="flex gap-x-4">
+                            <x-filament::button type="button" color="gray"
+                                @click="$dispatch('close-modal', { id: 'confirm-column-deletion' })">
+                                Cancel
+                            </x-filament::button>
+
+                            <x-filament::button type="button" color="danger" @click="confirmColumnDeletion()">
                                 Delete
                             </x-filament::button>
                         </div>
