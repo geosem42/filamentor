@@ -10,6 +10,10 @@ class PageController extends Controller
     public function show($slug)
     {
         $page = Page::where('slug', $slug)->firstOrFail();
+
+        if (!$page->is_published) {
+            abort(404);
+        }
         
         return Inertia::render('Page', [
             'title' => $page->title,
@@ -18,6 +22,9 @@ class PageController extends Controller
             'is_published' => $page->is_published,
             'created_at' => $page->created_at,
             'updated_at' => $page->updated_at,
+            'meta_title' => $page->meta_title,
+            'meta_description' => $page->meta_description,
+            'og_image' => $page->og_image,
         ]);
     }
 }

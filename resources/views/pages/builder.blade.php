@@ -2,9 +2,9 @@
     <form wire:submit.prevent="save">
         {{ $this->form }}
 
-        <div class="mt-4 flex justify-end">
+        <div class="mt-3 flex justify-end">
             <x-filament::button wire:click="save">
-                Save page
+                Save Page
             </x-filament::button>
         </div>
         
@@ -14,7 +14,7 @@
             @js(\Filament\Support\Facades\FilamentAsset::getScriptSrc('alpine-sort', 'filamentor'))
         ]">
 
-            <div class="flex justify-end">
+            <div class="flex justify-start">
                 <button type="button"
                     class="bg-primary-500 hover:bg-secondary-500 text-white text-right rounded-lg flex items-center p-2 my-4"
                     @click="addRow">

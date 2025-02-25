@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue';
 import { Head } from '@inertiajs/vue3'
 import TextElement from '@/Components/Elements/TextElement.vue'
 import ImageElement from '@/Components/Elements/ImageElement.vue'
@@ -12,8 +13,21 @@ const props = defineProps({
     title: {
         type: String,
         required: true
-    }
+    },
+    description: String,
+    is_published: {
+        type: Boolean,
+        default: false
+    },
+    created_at: String,
+    updated_at: String,
+    meta_title: String,
+    meta_description: String,
+    og_image: String
 })
+
+const pageTitle = computed(() => props.meta_title || props.title);
+const pageDescription = computed(() => props.meta_description || props.description);
 
 const getElementComponent = (type) => {
     const elementMap = {
@@ -26,7 +40,15 @@ const getElementComponent = (type) => {
 </script>
 
 <template>
-    <Head :title="title" />
+    <Head>
+        <title>{{ pageTitle }}</title>
+        <meta name="description" :content="pageDescription" v-if="pageDescription">
+        <meta property="og:title" :content="pageTitle" v-if="pageTitle">
+        <meta property="og:description" :content="pageDescription" v-if="pageDescription">
+        <meta property="og:image" :content="og_image" v-if="og_image">
+        <meta property="og:type" content="website">
+    </Head>
+    
     <div class="container mx-auto max-w-7xl">
         <template v-for="row in layout" :key="row.id">
             <div class="grid mb-4" 

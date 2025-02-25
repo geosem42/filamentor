@@ -1,12 +1,3 @@
-# This is my package filamentor
-
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/geosem42/filamentor.svg?style=flat-square)](https://packagist.org/packages/geosem42/filamentor)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/geosem42/filamentor/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/geosem42/filamentor/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/geosem42/filamentor/fix-php-code-styling.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/geosem42/filamentor/actions?query=workflow%3A"Fix+PHP+code+styling"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/geosem42/filamentor.svg?style=flat-square)](https://packagist.org/packages/geosem42/filamentor)
-
-
-
 # Filamentor - Drag & Drop Page Builder for Filament
 
 Filamentor is a powerful, flexible page builder plugin for Laravel Filament that empowers you to create dynamic pages with a modern drag-and-drop interface. Build professional layouts without writing code using an intuitive grid-based system.
@@ -27,6 +18,17 @@ Filamentor is a powerful, flexible page builder plugin for Laravel Filament that
 - PHP 8.1 or higher
 - Laravel 10.x
 - Filament 3.x
+- Tailwind CSS
+
+## CSS Framework Dependency
+
+Filamentor relies on TailwindCSS for its layout system, particularly for:
+
+- Grid layouts (`grid-cols-*` classes)
+- Spacing utilities (`p-*`, `m-*` classes)
+- Responsive design classes
+
+Make sure your layout includes Tailwind CSS.
 
 ### Step 1: Install the Package
 
@@ -122,6 +124,17 @@ npm run build
 
 After installation, you'll find the Filamentor page builder in your Filament admin panel. You can create and manage pages through the interface.
 
+## Template Integration Note
+
+The Filamentor page templates (both Vue and Livewire versions) do not come pre-integrated with any application layout. You will need to manually include them in your own application layout to ensure proper styling, navigation, and site structure.
+
+For example:
+
+- In Livewire: Wrap `resources/views/pages/show.blade.php` in your layout.
+- In Vue: Include the Page component within your `AppLayout` layout component.
+
+This design gives you complete flexibility to integrate Filamentor pages within your existing site structure.
+
 ## Stack-Specific Notes
 
 ### Vue/Inertia Setup
@@ -131,6 +144,8 @@ If you selected the Vue stack, ensure Inertia.js is properly installed and confi
 ### Livewire Setup
 
 If you selected the Livewire stack, ensure Livewire is properly installed. The page rendering will use the Livewire components published during installation.
+
+For proper SEO functionality with Filamentor's Livewire implementation, your layout must include a `@stack('meta')` directive in the `<head>` section.
 
 ## Extending Filamentor
 
