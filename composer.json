@@ -1,6 +1,7 @@
 {
     "name": "geosem42/filamentor",
     "description": "Page Builder for Filament",
+    "version": "1.0.0",
     "keywords": [
         "geosem42",
         "laravel",
@@ -31,6 +32,10 @@
         "pestphp/pest": "^2.1",
         "pestphp/pest-plugin-arch": "^2.0",
         "pestphp/pest-plugin-laravel": "^2.0"
+    },
+    "suggest": {
+        "livewire/livewire": "Required for using the Livewire frontend (^3.0)",
+        "inertiajs/inertia-laravel": "Required for using the Vue/Inertia frontend (^1.0)"
     },
     "autoload": {
         "psr-4": {
