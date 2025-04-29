@@ -1,6 +1,14 @@
 import '../css/filamentor.css';
 import './store';
 import { createDragHandlers } from './dragHandlers';
+import Alpine from 'alpinejs'; // <-- Import Alpine itself
+import AlpineSort from '@alpinejs/sort'; // <-- Import the sort plugin
+
+// 2. Register the plugin with Alpine
+//    Do this *before* Alpine initializes your components.
+//    Filament typically handles Alpine.start(), so registering
+//    before or within 'alpine:init' is usually correct.
+Alpine.plugin(AlpineSort);
 
 window.addEventListener('alpine:init', () => {
 
