@@ -18,6 +18,7 @@ class InstallFilamentor extends Command
         $this->publishAssets([
             __DIR__ . '/../../dist/filamentor.js' => public_path('js/filamentor/filamentor.js'),
             __DIR__ . '/../../dist/filamentor.css' => public_path('css/filamentor/filamentor.css'),
+            __DIR__ . '/../../dist/alpine-sort.js' => public_path('js/filamentor/alpine-sort.js'),
         ]);
 
         // Frontend choice and publishing will come next
