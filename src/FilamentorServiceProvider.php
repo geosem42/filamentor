@@ -126,7 +126,7 @@ class FilamentorServiceProvider extends PackageServiceProvider
     protected function getAssets(): array
     {
         return [
-            //Js::make('alpine-sort', __DIR__ . '/../node_modules/@alpinejs/sort/dist/cdn.min.js'),
+            Js::make('alpine-sort', __DIR__ . '/../node_modules/@alpinejs/sort/dist/cdn.min.js'),
             Js::make('filamentor', __DIR__ . '/../dist/filamentor.js'),
             Css::make('filamentor', __DIR__ . '/../dist/filamentor.css'),
         ];
