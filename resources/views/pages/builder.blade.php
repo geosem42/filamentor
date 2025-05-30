@@ -70,51 +70,45 @@
                         </div>
 
                         <!-- Columns Container -->
-                        <div class="flex gap-2 mt-4">
-                            <!-- Empty state when no columns exist in a row -->
-                            <div x-show="row.columns.length === 0" class="flex flex-col items-center justify-center p-8 text-center rounded-lg my-2 w-full">
+                        <div class="flex gap-2 mt-4 columns-container"
+                            @dragover.prevent="handleColumnContainerDragOver($event, row)"
+                            @dragleave="handleColumnContainerDragLeave($event)"
+                            @drop="handleColumnDropInContainer($event, row)">
+                            <div x-show="row.columns.length === 0" class="column-empty-state flex flex-col items-center justify-center p-8 text-center rounded-lg my-2 w-full">
                                 <x-heroicon-o-view-columns class="w-5 h-5 me-3" />
-                                <h3 class="text-sm font-medium text-gray-900">No columns in this row</h3>
-                                <p class="mt-1 text-xs text-gray-500">Add a column to place content elements.</p>
+                                <h3 class="text-sm font-medium text-gray-900 dark:text-white">No columns in this row</h3>
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Add a column or drag one here.</p>
                             </div>
 
-                            <template x-for="(column, columnIndex) in row.columns" :key="column . id">
-                                <div class="flex-1 bg-white dark:bg-gray-900 p-4 rounded" draggable="true"
+                            <template x-for="(column, columnIndex) in row.columns" :key="column.id">
+                                <div class="flex-1 bg-white dark:bg-gray-900 p-4 rounded column-item-wrapper" draggable="true"
                                     @dragstart="handleColumnDragStart($event, column, row)"
-                                    @dragover="handleColumnDragOver($event)" @dragend="handleColumnDragEnd($event)"
-                                    @drop="handleColumnDrop($event, column, row)">
-                                    <!-- Column Header -->
+                                    @dragover.stop.prevent="handleColumnItemDragOver($event, column, row)"
+                                    @dragleave.stop="handleColumnItemDragLeave($event)"
+                                    @dragend="handleColumnDragEnd($event)"
+                                    @drop.stop="handleColumnDropOnItem($event, column, row)">
                                     <div class="flex items-center justify-between mb-3">
-                                        <div class="flex items-center cursor-move">
+                                        <div class="flex items-center cursor-move column-handle">
                                             <x-heroicon-o-bars-3 class="w-4 h-4 me-2" />
-                                            {{-- <div x-text="'Column ' + column.id" class="ms-2"></div> --}}
                                         </div>
-
                                         <div class="flex items-center space-x-2">
-                                            <!-- Column Settings -->
                                             <button type="button" class="p-1 filamentor-btn-hover rounded"
                                                 @click="$dispatch('open-modal', { id: 'column-settings-modal' }); openColumnSettings(row, column)">
                                                 <x-heroicon-o-cog class="w-4 h-4" />
                                             </button>
-
-                                            <!-- Delete Column -->
                                             <button type="button" class="p-1 filamentor-btn-hover rounded"
                                                 @click="deleteColumn(row, columnIndex)">
                                                 <x-heroicon-o-trash class="w-4 h-4 text-red-500" />
                                             </button>
                                         </div>
                                     </div>
-
-                                    <!-- Column Content -->
                                     <div
                                         class="min-h-[120px] border-2 border-dashed border-gray-200 dark:border-gray-700 rounded mt-2 overflow-hidden">
-                                        <!-- Column has elements -->
                                         <template x-if="column.elements && column.elements.length > 0">
                                             <div class="h-full">
                                                 <template x-for="(element, elementIndex) in column.elements"
-                                                    :key="element . id || elementIndex">
+                                                    :key="element.id || elementIndex">
                                                     <div class="h-full">
-                                                        <!-- Element Header - Same for all types -->
                                                         <div
                                                             class="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                                                             <span x-text="element.type.split('\\').pop()"
@@ -132,10 +126,7 @@
                                                                 </button>
                                                             </div>
                                                         </div>
-
-                                                        <!-- Element Content - Type-specific with consistent styling -->
                                                         <div class="p-3">
-                                                            <!-- Text Element -->
                                                             <template x-if="element.type.includes('Text')">
                                                                 <div
                                                                     class="prose prose-sm max-w-none dark:prose-invert max-h-[80px] overflow-y-auto">
@@ -144,13 +135,11 @@
                                                                     </div>
                                                                 </div>
                                                             </template>
-
-                                                            <!-- Image Element -->
                                                             <template x-if="element.type.includes('Image')">
                                                                 <div class="flex items-center h-[80px]">
                                                                     <template x-if="element.content?.thumbnail">
                                                                         <div class="flex flex-row items-center">
-                                                                            <img :src="element . content . thumbnail"
+                                                                            <img :src="element.content.thumbnail"
                                                                                 class="w-16 h-16 object-cover rounded border border-gray-200 dark:border-gray-700" />
                                                                             <span
                                                                                 class="text-xs text-gray-500 dark:text-gray-400 ml-3 line-clamp-2"
@@ -166,8 +155,6 @@
                                                                     </template>
                                                                 </div>
                                                             </template>
-
-                                                            <!-- Video Element -->
                                                             <template x-if="element.type.includes('Video')">
                                                                 <div class="flex items-center h-[80px]">
                                                                     <div
@@ -187,8 +174,6 @@
                                                 </template>
                                             </div>
                                         </template>
-
-                                        <!-- Empty Column State -->
                                         <template x-if="!column.elements || column.elements.length === 0">
                                             <div class="h-full flex flex-col items-center justify-center p-3">
                                                 <button type="button" @click="setActiveColumn(row, columnIndex)"
@@ -199,7 +184,6 @@
                                             </div>
                                         </template>
                                     </div>
-
                                 </div>
                             </template>
                         </div>

@@ -142,3 +142,28 @@ input.filamentor-spacing-input:focus {
 .dark .filamentor-btn-hover:hover {
     background-color: #374151;
 }
+
+.column-item-wrapper.drop-before {
+    outline: 2px solid #3b82f6; /* Tailwind's blue-500 */
+    outline-offset: -2px;
+    border-left: 3px solid #3b82f6 !important; /* Adjust as needed */
+}
+.column-item-wrapper.drop-after {
+    outline: 2px solid #3b82f6;
+    outline-offset: -2px;
+    border-right: 3px solid #3b82f6 !important; /* Adjust as needed */
+}
+.columns-container.drop-inside {
+    background-color: #eff6ff; /* Tailwind's blue-100 or a light indicator color */
+    outline: 2px dashed #60a5fa; /* Tailwind's blue-400 */
+    min-height: 100px; /* Ensure it's visible when empty */
+}
+
+.dragging-column { /* Ensure this is distinct */
+    opacity: 0.5;
+    border: 2px dashed #707070 !important;
+    background-color: #f9fafb; /* Tailwind's gray-50 */
+}
+.dark .dragging-column {
+    background-color: #374151; /* Tailwind's gray-700 for dark mode */
+}

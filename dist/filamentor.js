@@ -3,93 +3,163 @@ document.addEventListener("alpine:init", () => {
     items: [],
     init() {
     },
-    setRows(t) {
-      this.items = t;
+    setRows(o) {
+      this.items = o;
     },
-    getColumn(t, e) {
-      var o;
-      return ((o = this.items[t]) == null ? void 0 : o.columns[e]) || {};
+    getColumn(o, e) {
+      var t;
+      return ((t = this.items[o]) == null ? void 0 : t.columns[e]) || {};
     },
-    getColumns(t) {
+    getColumns(o) {
       var e;
-      return ((e = this.items[t]) == null ? void 0 : e.columns) || [];
+      return ((e = this.items[o]) == null ? void 0 : e.columns) || [];
     },
-    reorderRows(t) {
-      if (!t || typeof t.newIndex > "u" || typeof t.oldIndex > "u")
+    reorderRows(o) {
+      if (!o || typeof o.newIndex > "u" || typeof o.oldIndex > "u")
         return this.items;
-      const e = t.newIndex, o = t.oldIndex;
+      const e = o.newIndex, t = o.oldIndex;
       let r = [...this.items];
-      const n = r.splice(o, 1)[0];
-      return r.splice(e, 0, n), r.forEach((l, i) => {
-        l.order = i;
+      const n = r.splice(t, 1)[0];
+      return r.splice(e, 0, n), r.forEach((s, i) => {
+        s.order = i;
       }), this.items = r, this.items;
     },
-    reorderColumns({ sourceRowId: t, targetRowId: e, oldIndex: o, newIndex: r }) {
-      const n = [...this.items], l = n.find((c) => c.id === parseInt(t)), i = n.find((c) => c.id === parseInt(e)), [s] = l.columns.splice(o, 1);
-      return i.columns.splice(r, 0, s), this.items = n, n;
+    // Modified reorderColumns to handle columns within the same row (existing functionality)
+    reorderColumns({ rowId: o, oldIndex: e, newIndex: t }) {
+      const r = [...this.items], n = r.find((s) => s.id === o);
+      if (n && Array.isArray(n.columns)) {
+        const [s] = n.columns.splice(e, 1);
+        n.columns.splice(t, 0, s), n.columns.forEach((i, l) => i.order = l);
+      }
+      return this.items = r, this.items;
+    },
+    // New method to move columns between rows or reorder within the same row
+    moveColumnAndReorder({ sourceRowId: o, draggedColumnId: e, targetRowId: t, newIndexInTargetRow: r }) {
+      const n = [...this.items], s = n.find((d) => d.id === o), i = n.find((d) => d.id === t);
+      if (!s || !i)
+        return console.error("Source or Target Row not found for moving column", { sourceRowId: o, targetRowId: t }), this.items;
+      Array.isArray(s.columns) || (s.columns = []), Array.isArray(i.columns) || (i.columns = []);
+      const l = s.columns.findIndex((d) => d.id === e);
+      if (l === -1)
+        return console.error("Dragged column not found in source row", { draggedColumnId: e, sourceRowId: o }), this.items;
+      const [c] = s.columns.splice(l, 1), a = Math.max(0, Math.min(r, i.columns.length));
+      return i.columns.splice(a, 0, c), s.columns.forEach((d, u) => d.order = u), i.columns.forEach((d, u) => d.order = u), this.items = n, this.items;
     }
   });
 });
-function d(t) {
+function f(o) {
   return {
-    handleDragStart(e, o) {
-      e.dataTransfer.setData("text/plain", o.id), e.target.classList.add("dragging");
+    // Row drag handlers (existing - keep as is)
+    handleDragStart(e, t) {
+      e.dataTransfer.setData("text/plain", t.id.toString()), e.target.classList.add("dragging");
     },
     handleDragOver(e) {
       e.preventDefault();
-      const o = e.target.closest(".bg-gray-50");
-      o && (document.querySelectorAll(".drop-target").forEach((r) => {
-        r.classList.remove("drop-target");
-      }), o.classList.add("drop-target"));
+      const t = e.target.closest(".bg-gray-50");
+      t && !t.classList.contains("dragging") && (document.querySelectorAll(".drop-target").forEach((r) => r.classList.remove("drop-target")), t.classList.add("drop-target"));
     },
     handleDragEnd(e) {
-      e.target.classList.remove("dragging"), document.querySelectorAll(".drop-target").forEach((o) => {
-        o.classList.remove("drop-target");
-      });
+      e.target.classList.remove("dragging"), document.querySelectorAll(".drop-target").forEach((t) => t.classList.remove("drop-target"));
     },
-    handleDrop(e, o) {
-      e.preventDefault(), document.querySelectorAll(".dragging, .drop-target").forEach((a) => {
-        a.classList.remove("dragging", "drop-target");
-      });
-      const r = e.dataTransfer.getData("text/plain"), n = Alpine.store("rows").items, l = n.findIndex((a) => a.id.toString() === r), i = n.findIndex((a) => a.id === o.id), s = Alpine.store("rows").reorderRows({
+    handleDrop(e, t) {
+      e.preventDefault(), document.querySelectorAll(".dragging, .drop-target").forEach((a) => a.classList.remove("dragging", "drop-target"));
+      const r = e.dataTransfer.getData("text/plain"), n = Alpine.store("rows").items, s = n.findIndex((a) => a.id.toString() === r), i = n.findIndex((a) => a.id === t.id);
+      if (s === -1 || i === -1) return;
+      const l = Alpine.store("rows").reorderRows({
         newIndex: i,
-        oldIndex: l
+        oldIndex: s
       });
-      window.Livewire.find(
-        document.querySelector("[wire\\:id]").getAttribute("wire:id")
-      ).saveLayout(JSON.stringify(s));
+      window.Livewire.find(document.querySelector("[wire\\:id]").getAttribute("wire:id")).saveLayout(JSON.stringify(l));
     },
-    handleColumnDragStart(e, o, r) {
+    // Column drag handlers (updated)
+    handleColumnDragStart(e, t, r) {
       e.stopPropagation(), e.dataTransfer.setData("text/plain", JSON.stringify({
-        columnId: o.id,
-        rowId: r.id
-      })), e.target.classList.add("dragging-column");
-    },
-    handleColumnDragOver(e) {
-      e.stopPropagation(), e.preventDefault();
-      const o = e.target.closest('[draggable="true"]');
-      o && !o.classList.contains("dragging-column") && (document.querySelectorAll(".drop-target-column").forEach((r) => {
-        r.classList.remove("drop-target-column");
-      }), o.classList.add("drop-target-column"));
+        columnId: t.id,
+        rowId: r.id,
+        type: "column"
+        // Add a type to distinguish from other draggables if any
+      })), e.target.classList.add("dragging-column"), document.body.classList.add("dragging-active-column");
     },
     handleColumnDragEnd(e) {
-      e.stopPropagation(), document.querySelectorAll(".dragging-column, .drop-target-column").forEach((o) => {
-        o.classList.remove("dragging-column", "drop-target-column");
-      });
+      e.stopPropagation(), document.querySelectorAll(".dragging-column").forEach((t) => t.classList.remove("dragging-column")), document.querySelectorAll(".drop-before, .drop-after, .drop-inside").forEach((t) => t.classList.remove("drop-before", "drop-after", "drop-inside")), document.body.classList.remove("dragging-active-column");
     },
-    handleColumnDrop(e, o, r) {
-      e.stopPropagation(), e.preventDefault();
+    // Drag over an existing column item
+    handleColumnItemDragOver(e, t, r) {
+      e.preventDefault(), e.stopPropagation();
+      const n = e.dataTransfer.types.includes("text/plain") ? e.dataTransfer.getData("text/plain") : null;
+      if (n)
+        try {
+          if (JSON.parse(n).type !== "column") return;
+        } catch {
+          return;
+        }
+      document.querySelectorAll(".drop-before, .drop-after, .drop-inside").forEach((i) => i.classList.remove("drop-before", "drop-after", "drop-inside"));
+      const s = e.currentTarget;
+      if (s && !s.classList.contains("dragging-column")) {
+        const i = s.getBoundingClientRect();
+        e.clientX > i.left + i.width / 2 ? s.classList.add("drop-after") : s.classList.add("drop-before");
+      }
+    },
+    handleColumnItemDragLeave(e) {
+      e.stopPropagation();
+      const t = e.currentTarget;
+      t && t.classList.remove("drop-before", "drop-after");
+    },
+    // Drag over the general columns container of a row (for empty rows or appending)
+    handleColumnContainerDragOver(e, t) {
+      e.preventDefault(), e.stopPropagation();
+      const r = e.dataTransfer.types.includes("text/plain") ? e.dataTransfer.getData("text/plain") : null;
+      if (r)
+        try {
+          if (JSON.parse(r).type !== "column") return;
+        } catch {
+          return;
+        }
+      else
+        return;
+      document.querySelectorAll(".drop-before, .drop-after, .drop-inside").forEach((l) => l.classList.remove("drop-before", "drop-after", "drop-inside"));
+      const n = e.currentTarget, s = t.columns.length === 0, i = e.target === n || e.target.closest(".column-empty-state");
+      (s || i) && n.classList.add("drop-inside");
+    },
+    handleColumnContainerDragLeave(e) {
+      e.stopPropagation(), e.currentTarget.classList.remove("drop-inside");
+    },
+    // Drop onto an existing column item
+    handleColumnDropOnItem(e, t, r) {
+      e.preventDefault(), e.stopPropagation();
       const n = JSON.parse(e.dataTransfer.getData("text/plain"));
-      if (n.rowId !== r.id) return;
-      const l = r.columns.findIndex((a) => a.id === n.columnId), i = r.columns.findIndex((a) => a.id === o.id), s = Alpine.store("rows").reorderColumns({
-        sourceRowId: r.id,
-        targetRowId: r.id,
-        oldIndex: l,
-        newIndex: i
+      if (n.type !== "column") return;
+      const s = n.rowId, i = n.columnId, l = r.id, c = e.currentTarget;
+      let a;
+      const d = Alpine.store("rows").items.find((m) => m.id === l);
+      if (!d) return;
+      const u = d.columns.findIndex((m) => m.id === t.id);
+      if (u === -1) return;
+      c.classList.contains("drop-after") ? a = u + 1 : a = u, c.classList.remove("drop-before", "drop-after"), document.querySelectorAll(".dragging-column").forEach((m) => m.classList.remove("dragging-column")), document.body.classList.remove("dragging-active-column");
+      const h = Alpine.store("rows").moveColumnAndReorder({
+        sourceRowId: s,
+        draggedColumnId: i,
+        targetRowId: l,
+        newIndexInTargetRow: a
       });
-      window.Livewire.find(
-        document.querySelector("[wire\\:id]").getAttribute("wire:id")
-      ).saveLayout(JSON.stringify(s));
+      h && window.Livewire.find(document.querySelector("[wire\\:id]").getAttribute("wire:id")).saveLayout(JSON.stringify(h));
+    },
+    // Drop into the general columns container of a row
+    handleColumnDropInContainer(e, t) {
+      e.preventDefault(), e.stopPropagation();
+      const r = JSON.parse(e.dataTransfer.getData("text/plain"));
+      if (r.type !== "column") return;
+      const n = r.rowId, s = r.columnId, i = t.id;
+      e.currentTarget.classList.remove("drop-inside"), document.querySelectorAll(".dragging-column").forEach((u) => u.classList.remove("dragging-column")), document.body.classList.remove("dragging-active-column");
+      const c = Alpine.store("rows").items.find((u) => u.id === i);
+      if (!c) return;
+      const a = c.columns.length, d = Alpine.store("rows").moveColumnAndReorder({
+        sourceRowId: n,
+        draggedColumnId: s,
+        targetRowId: i,
+        newIndexInTargetRow: a
+      });
+      d && window.Livewire.find(document.querySelector("[wire\\:id]").getAttribute("wire:id")).saveLayout(JSON.stringify(d));
     }
   };
 }
@@ -109,7 +179,7 @@ window.addEventListener("alpine:init", () => {
       image: { url: null, alt: null, thumbnail: null },
       video: { url: null }
     },
-    ...d(),
+    ...f(),
     /**
      * Initializes the page builder with saved layout data
      * Parses saved JSON layout from the hidden input field and loads it into the Alpine store
@@ -121,24 +191,24 @@ window.addEventListener("alpine:init", () => {
           console.warn("Canvas data reference not found");
           return;
         }
-        const t = this.$refs.canvasData.value;
-        if (t)
+        const o = this.$refs.canvasData.value;
+        if (o)
           try {
-            const e = JSON.parse(t);
+            const e = JSON.parse(o);
             if (!Array.isArray(e)) {
               console.error("Parsed layout is not an array");
               return;
             }
-            const o = e.sort((r, n) => {
-              const l = r.order !== void 0 ? r.order : 0, i = n.order !== void 0 ? n.order : 0;
-              return l - i;
+            const t = e.sort((r, n) => {
+              const s = r.order !== void 0 ? r.order : 0, i = n.order !== void 0 ? n.order : 0;
+              return s - i;
             });
-            Alpine.store("rows").setRows(o);
+            Alpine.store("rows").setRows(t);
           } catch (e) {
             console.error("Failed to parse layout JSON:", e), Alpine.store("rows").setRows([]);
           }
-      } catch (t) {
-        console.error("Error initializing builder:", t), Alpine.store("rows").setRows([]);
+      } catch (o) {
+        console.error("Error initializing builder:", o), Alpine.store("rows").setRows([]);
       }
     },
     /**
@@ -147,14 +217,14 @@ window.addEventListener("alpine:init", () => {
      * 
      * @param {Object} row - The row object to edit settings for
      */
-    openRowSettings(t) {
+    openRowSettings(o) {
       try {
-        if (!t || !t.id) {
+        if (!o || !o.id) {
           console.error("Invalid row provided to openRowSettings");
           return;
         }
-        if (this.activeRow = Alpine.store("rows").items.find((e) => e.id === t.id), !this.activeRow) {
-          console.error(`Row with id ${t.id} not found`);
+        if (this.activeRow = Alpine.store("rows").items.find((e) => e.id === o.id), !this.activeRow) {
+          console.error(`Row with id ${o.id} not found`);
           return;
         }
         this.activeRow.padding = this.activeRow.padding || { top: 0, right: 0, bottom: 0, left: 0 }, this.activeRow.margin = this.activeRow.margin || { top: 0, right: 0, bottom: 0, left: 0 }, this.activeRow.customClasses = this.activeRow.customClasses || "", this.showSettings = !0;
@@ -177,12 +247,12 @@ window.addEventListener("alpine:init", () => {
           console.error("Active row missing ID property");
           return;
         }
-        const t = Alpine.store("rows").items.findIndex((n) => n.id === this.activeRow.id);
-        if (t === -1) {
+        const o = Alpine.store("rows").items.findIndex((n) => n.id === this.activeRow.id);
+        if (o === -1) {
           console.error(`Row with id ${this.activeRow.id} not found in rows store`);
           return;
         }
-        const e = this.activeRow.padding || {}, o = this.activeRow.margin || {}, r = {
+        const e = this.activeRow.padding || {}, t = this.activeRow.margin || {}, r = {
           ...this.activeRow,
           padding: {
             top: this.safeParseNumber(e.top),
@@ -191,29 +261,29 @@ window.addEventListener("alpine:init", () => {
             left: this.safeParseNumber(e.left)
           },
           margin: {
-            top: this.safeParseNumber(o.top),
-            right: this.safeParseNumber(o.right),
-            bottom: this.safeParseNumber(o.bottom),
-            left: this.safeParseNumber(o.left)
+            top: this.safeParseNumber(t.top),
+            right: this.safeParseNumber(t.right),
+            bottom: this.safeParseNumber(t.bottom),
+            left: this.safeParseNumber(t.left)
           }
         };
-        Alpine.store("rows").items[t] = r;
+        Alpine.store("rows").items[o] = r;
         try {
           const n = JSON.stringify(Alpine.store("rows").items);
           if (!this.$refs.canvasData) {
             console.error("Canvas data reference not found");
             return;
           }
-          this.$refs.canvasData.value = n, this.$wire.saveLayout(n).then((l) => {
-            l && l.success ? console.log("Layout saved successfully") : console.warn("Layout save returned unexpected result", l);
-          }).catch((l) => {
-            console.error("Error saving layout:", l);
+          this.$refs.canvasData.value = n, this.$wire.saveLayout(n).then((s) => {
+            s && s.success ? console.log("Layout saved successfully") : console.warn("Layout save returned unexpected result", s);
+          }).catch((s) => {
+            console.error("Error saving layout:", s);
           });
         } catch (n) {
           console.error("Error stringifying layout data:", n);
         }
-      } catch (t) {
-        console.error("Error in saveRowSettings:", t);
+      } catch (o) {
+        console.error("Error in saveRowSettings:", o);
       }
     },
     /**
@@ -223,8 +293,8 @@ window.addEventListener("alpine:init", () => {
      */
     addRow() {
       try {
-        const t = Date.now(), e = {
-          id: t,
+        const o = Date.now(), e = {
+          id: o,
           // Unique identifier for the row
           order: Alpine.store("rows").items.length,
           // Position in the layout (zero-based)
@@ -246,7 +316,7 @@ window.addEventListener("alpine:init", () => {
           // Optional CSS classes for styling
           // Each row starts with at least one column
           columns: [{
-            id: t + 1,
+            id: o + 1,
             // Unique identifier for the column (timestamp + 1 to ensure uniqueness)
             width: "w-full",
             // Default to full width column
@@ -278,17 +348,17 @@ window.addEventListener("alpine:init", () => {
         }
         Alpine.store("rows").items.push(e), this.updateCanvasData();
         try {
-          const o = JSON.stringify(Alpine.store("rows").items);
-          this.$wire.saveLayout(o).then((r) => {
+          const t = JSON.stringify(Alpine.store("rows").items);
+          this.$wire.saveLayout(t).then((r) => {
             r && r.success ? console.log("Row added and layout saved successfully") : console.warn("Layout saved but returned unexpected result", r);
           }).catch((r) => {
             console.error("Error saving layout after adding row:", r);
           });
-        } catch (o) {
-          console.error("Error stringifying layout after adding row:", o);
+        } catch (t) {
+          console.error("Error stringifying layout after adding row:", t);
         }
-      } catch (t) {
-        console.error("Error adding new row:", t), this.updateCanvasData();
+      } catch (o) {
+        console.error("Error adding new row:", o), this.updateCanvasData();
       }
     },
     /**
@@ -297,19 +367,19 @@ window.addEventListener("alpine:init", () => {
      * 
      * @param {Object} row - The row object to be deleted
      */
-    deleteRow(t) {
+    deleteRow(o) {
       try {
-        if (!t || typeof t != "object" || !t.id) {
+        if (!o || typeof o != "object" || !o.id) {
           console.error("Invalid row provided for deletion");
           return;
         }
-        if (!Array.isArray(t.columns)) {
-          console.warn("Row has no columns array, proceeding with deletion"), this.performRowDeletion(t);
+        if (!Array.isArray(o.columns)) {
+          console.warn("Row has no columns array, proceeding with deletion"), this.performRowDeletion(o);
           return;
         }
-        t.columns.some(
-          (o) => o.elements && Array.isArray(o.elements) && o.elements.length > 0
-        ) ? (this.rowToDelete = t, this.$dispatch("open-modal", { id: "confirm-row-deletion" })) : this.performRowDeletion(t);
+        o.columns.some(
+          (t) => t.elements && Array.isArray(t.elements) && t.elements.length > 0
+        ) ? (this.rowToDelete = o, this.$dispatch("open-modal", { id: "confirm-row-deletion" })) : this.performRowDeletion(o);
       } catch (e) {
         console.error("Error during row deletion process:", e), this.rowToDelete = null;
       }
@@ -325,8 +395,8 @@ window.addEventListener("alpine:init", () => {
           return;
         }
         this.performRowDeletion(this.rowToDelete), this.$dispatch("close-modal", { id: "confirm-row-deletion" }), this.rowToDelete = null;
-      } catch (t) {
-        console.error("Error during row deletion confirmation:", t), this.$dispatch("close-modal", { id: "confirm-row-deletion" }), this.rowToDelete = null;
+      } catch (o) {
+        console.error("Error during row deletion confirmation:", o), this.$dispatch("close-modal", { id: "confirm-row-deletion" }), this.rowToDelete = null;
       }
     },
     /**
@@ -334,9 +404,9 @@ window.addEventListener("alpine:init", () => {
      * 
      * @param {Object} row - The row object to be deleted
      */
-    performRowDeletion(t) {
+    performRowDeletion(o) {
       try {
-        if (!t || !t.id) {
+        if (!o || !o.id) {
           console.error("Invalid row provided to performRowDeletion");
           return;
         }
@@ -344,25 +414,25 @@ window.addEventListener("alpine:init", () => {
           console.error("Rows store not properly initialized");
           return;
         }
-        const e = Alpine.store("rows").items.findIndex((o) => o.id === t.id);
+        const e = Alpine.store("rows").items.findIndex((t) => t.id === o.id);
         if (e > -1) {
-          Alpine.store("rows").items.splice(e, 1), Alpine.store("rows").items = Alpine.store("rows").items.map((o, r) => ({
-            ...o,
+          Alpine.store("rows").items.splice(e, 1), Alpine.store("rows").items = Alpine.store("rows").items.map((t, r) => ({
+            ...t,
             order: r
             // Reassign order based on array position
           }));
           try {
-            const o = JSON.stringify(Alpine.store("rows").items);
-            this.updateCanvasData(), this.$wire.saveLayout(o).then((r) => {
+            const t = JSON.stringify(Alpine.store("rows").items);
+            this.updateCanvasData(), this.$wire.saveLayout(t).then((r) => {
               r && r.success ? console.log("Row deleted and layout saved successfully") : console.warn("Layout saved after deletion but returned unexpected result", r);
             }).catch((r) => {
               console.error("Error saving layout after row deletion:", r);
             });
-          } catch (o) {
-            console.error("Error stringifying layout after row deletion:", o);
+          } catch (t) {
+            console.error("Error stringifying layout after row deletion:", t);
           }
         } else
-          console.warn(`Row with id ${t.id} not found in rows store`);
+          console.warn(`Row with id ${o.id} not found in rows store`);
       } catch (e) {
         console.error("Error performing row deletion:", e), this.updateCanvasData();
       }
@@ -373,9 +443,9 @@ window.addEventListener("alpine:init", () => {
      * @param {Object} row - The parent row object containing the column
      * @param {Object} column - The column object to be edited
      */
-    openColumnSettings(t, e) {
+    openColumnSettings(o, e) {
       try {
-        if (!t || !t.id) {
+        if (!o || !o.id) {
           console.error("Invalid row provided to openColumnSettings");
           return;
         }
@@ -383,9 +453,9 @@ window.addEventListener("alpine:init", () => {
           console.error("Invalid column provided to openColumnSettings");
           return;
         }
-        this.activeRow = t, this.activeColumn = e, this.activeColumn.padding = this.activeColumn.padding || { top: 0, right: 0, bottom: 0, left: 0 }, this.activeColumn.margin = this.activeColumn.margin || { top: 0, right: 0, bottom: 0, left: 0 }, this.activeColumn.customClasses = this.activeColumn.customClasses || "", typeof this.activeColumn.padding == "object" && (this.activeColumn.padding.top = this.safeParseNumber(this.activeColumn.padding.top), this.activeColumn.padding.right = this.safeParseNumber(this.activeColumn.padding.right), this.activeColumn.padding.bottom = this.safeParseNumber(this.activeColumn.padding.bottom), this.activeColumn.padding.left = this.safeParseNumber(this.activeColumn.padding.left)), typeof this.activeColumn.margin == "object" && (this.activeColumn.margin.top = this.safeParseNumber(this.activeColumn.margin.top), this.activeColumn.margin.right = this.safeParseNumber(this.activeColumn.margin.right), this.activeColumn.margin.bottom = this.safeParseNumber(this.activeColumn.margin.bottom), this.activeColumn.margin.left = this.safeParseNumber(this.activeColumn.margin.left));
-      } catch (o) {
-        console.error("Error opening column settings:", o), this.activeRow = null, this.activeColumn = null;
+        this.activeRow = o, this.activeColumn = e, this.activeColumn.padding = this.activeColumn.padding || { top: 0, right: 0, bottom: 0, left: 0 }, this.activeColumn.margin = this.activeColumn.margin || { top: 0, right: 0, bottom: 0, left: 0 }, this.activeColumn.customClasses = this.activeColumn.customClasses || "", typeof this.activeColumn.padding == "object" && (this.activeColumn.padding.top = this.safeParseNumber(this.activeColumn.padding.top), this.activeColumn.padding.right = this.safeParseNumber(this.activeColumn.padding.right), this.activeColumn.padding.bottom = this.safeParseNumber(this.activeColumn.padding.bottom), this.activeColumn.padding.left = this.safeParseNumber(this.activeColumn.padding.left)), typeof this.activeColumn.margin == "object" && (this.activeColumn.margin.top = this.safeParseNumber(this.activeColumn.margin.top), this.activeColumn.margin.right = this.safeParseNumber(this.activeColumn.margin.right), this.activeColumn.margin.bottom = this.safeParseNumber(this.activeColumn.margin.bottom), this.activeColumn.margin.left = this.safeParseNumber(this.activeColumn.margin.left));
+      } catch (t) {
+        console.error("Error opening column settings:", t), this.activeRow = null, this.activeColumn = null;
       }
     },
     /**
@@ -402,17 +472,17 @@ window.addEventListener("alpine:init", () => {
           console.error("No valid parent row for column settings"), this.$dispatch("close-modal", { id: "column-settings-modal" });
           return;
         }
-        const t = Alpine.store("rows").items, e = t.findIndex((r) => r.id === this.activeRow.id);
+        const o = Alpine.store("rows").items, e = o.findIndex((r) => r.id === this.activeRow.id);
         if (e === -1) {
           console.error(`Row with id ${this.activeRow.id} not found in rows store`), this.$dispatch("close-modal", { id: "column-settings-modal" });
           return;
         }
-        const o = t[e].columns.findIndex((r) => r.id === this.activeColumn.id);
-        if (o === -1) {
+        const t = o[e].columns.findIndex((r) => r.id === this.activeColumn.id);
+        if (t === -1) {
           console.error(`Column with id ${this.activeColumn.id} not found in row`), this.$dispatch("close-modal", { id: "column-settings-modal" });
           return;
         }
-        t[e].columns[o] = {
+        o[e].columns[t] = {
           ...this.activeColumn,
           padding: {
             top: this.safeParseNumber(this.activeColumn.padding.top),
@@ -428,7 +498,7 @@ window.addEventListener("alpine:init", () => {
           }
         };
         try {
-          const r = JSON.stringify(t);
+          const r = JSON.stringify(o);
           this.updateCanvasData(), this.$wire.saveLayout(r).then((n) => {
             n && n.success ? console.log("Column settings saved successfully") : console.warn("Layout saved but returned unexpected result", n);
           }).catch((n) => {
@@ -437,8 +507,8 @@ window.addEventListener("alpine:init", () => {
         } catch (r) {
           console.error("Error stringifying layout after column settings update:", r), this.$dispatch("close-modal", { id: "column-settings-modal" });
         }
-      } catch (t) {
-        console.error("Error saving column settings:", t), this.$dispatch("close-modal", { id: "column-settings-modal" });
+      } catch (o) {
+        console.error("Error saving column settings:", o), this.$dispatch("close-modal", { id: "column-settings-modal" });
       }
     },
     /**
@@ -447,19 +517,19 @@ window.addEventListener("alpine:init", () => {
      * 
      * @param {Object} row - The row object to add the column to
      */
-    addColumn(t) {
+    addColumn(o) {
       try {
-        if (!t || typeof t != "object" || !t.id) {
+        if (!o || typeof o != "object" || !o.id) {
           console.error("Invalid row provided to addColumn");
           return;
         }
-        Array.isArray(t.columns) || (console.warn("Row has no columns array, initializing empty array"), t.columns = []);
-        const o = {
+        Array.isArray(o.columns) || (console.warn("Row has no columns array, initializing empty array"), o.columns = []);
+        const t = {
           id: Date.now(),
           // Unique identifier for the column
           elements: [],
           // Initialize with no elements
-          order: t.columns.length,
+          order: o.columns.length,
           // Position in the row (zero-based)
           width: "w-full",
           // Default width class (Tailwind full width)
@@ -479,24 +549,24 @@ window.addEventListener("alpine:init", () => {
           },
           customClasses: ""
           // Optional CSS classes for styling
-        }, r = [...t.columns, o];
-        t.columns = r, this.$nextTick(() => {
+        }, r = [...o.columns, t];
+        o.columns = r, this.$nextTick(() => {
           try {
             const n = Alpine.store("rows").items;
             if (!n || !Array.isArray(n)) {
               console.error("Rows store not properly initialized");
               return;
             }
-            if (n.findIndex((s) => s.id === t.id) === -1) {
-              console.error(`Row with id ${t.id} not found in rows store`);
+            if (n.findIndex((l) => l.id === o.id) === -1) {
+              console.error(`Row with id ${o.id} not found in rows store`);
               return;
             }
             this.updateCanvasData();
             const i = JSON.stringify(n);
-            this.$wire.saveLayout(i).then((s) => {
-              s && s.success ? console.log("Column added and layout saved successfully") : console.warn("Layout saved but returned unexpected result", s);
-            }).catch((s) => {
-              console.error("Error saving layout after adding column:", s);
+            this.$wire.saveLayout(i).then((l) => {
+              l && l.success ? console.log("Column added and layout saved successfully") : console.warn("Layout saved but returned unexpected result", l);
+            }).catch((l) => {
+              console.error("Error saving layout after adding column:", l);
             });
           } catch (n) {
             console.error("Error processing or saving layout after adding column:", n);
@@ -512,29 +582,29 @@ window.addEventListener("alpine:init", () => {
      * 
      * @param {number|string} newCount - The new number of columns to set
      */
-    updateColumns(t) {
+    updateColumns(o) {
       try {
         if (!this.activeRow || typeof this.activeRow != "object") {
           console.error("No active row to update columns for");
           return;
         }
         Array.isArray(this.activeRow.columns) || (console.warn("Active row has no columns array, initializing empty array"), this.activeRow.columns = []);
-        const e = parseInt(t);
+        const e = parseInt(o);
         if (isNaN(e) || e < 1) {
-          console.error(`Invalid column count: ${t}`);
+          console.error(`Invalid column count: ${o}`);
           return;
         }
-        const o = this.activeRow.columns;
-        if (e > o.length)
+        const t = this.activeRow.columns;
+        if (e > t.length)
           try {
-            const r = e - o.length, n = Date.now();
+            const r = e - t.length, n = Date.now();
             for (let i = 0; i < r; i++)
-              o.push({
+              t.push({
                 id: n + i,
                 // Ensure unique IDs across columns
                 elements: [],
                 // Start with empty elements array
-                order: o.length,
+                order: t.length,
                 // Set order based on current position
                 width: "w-full",
                 // Default width class
@@ -542,21 +612,21 @@ window.addEventListener("alpine:init", () => {
                 margin: { top: 0, right: 0, bottom: 0, left: 0 },
                 customClasses: ""
               });
-            this.activeRow.columns.forEach((i, s) => {
-              i.order = s;
+            this.activeRow.columns.forEach((i, l) => {
+              i.order = l;
             });
-            const l = Alpine.store("rows").items;
-            if (!l || !Array.isArray(l)) {
+            const s = Alpine.store("rows").items;
+            if (!s || !Array.isArray(s)) {
               console.error("Rows store not properly initialized");
               return;
             }
             this.updateCanvasData();
             try {
-              const i = JSON.stringify(l);
-              this.$wire.saveLayout(i).then((s) => {
-                s && s.success ? console.log("Columns added and layout saved successfully") : console.warn("Layout saved but returned unexpected result", s);
-              }).catch((s) => {
-                console.error("Error saving layout after adding columns:", s);
+              const i = JSON.stringify(s);
+              this.$wire.saveLayout(i).then((l) => {
+                l && l.success ? console.log("Columns added and layout saved successfully") : console.warn("Layout saved but returned unexpected result", l);
+              }).catch((l) => {
+                console.error("Error saving layout after adding columns:", l);
               });
             } catch (i) {
               console.error("Error stringifying layout after adding columns:", i);
@@ -564,10 +634,10 @@ window.addEventListener("alpine:init", () => {
           } catch (r) {
             console.error("Error adding columns:", r);
           }
-        else if (e < o.length)
+        else if (e < t.length)
           try {
             this.newColumnCount = e, this.activeRow.columns.slice(e).some(
-              (l) => l.elements && Array.isArray(l.elements) && l.elements.length > 0
+              (s) => s.elements && Array.isArray(s.elements) && s.elements.length > 0
             ) ? this.$dispatch("open-modal", { id: "confirm-column-reduction" }) : this.confirmColumnReduction();
           } catch (r) {
             console.error("Error preparing column reduction:", r);
@@ -585,9 +655,9 @@ window.addEventListener("alpine:init", () => {
      * @param {Object} row - The parent row object containing the column
      * @param {number} columnIndex - The index of the column to delete
      */
-    deleteColumn(t, e) {
+    deleteColumn(o, e) {
       try {
-        if (!t || typeof t != "object" || !t.id) {
+        if (!o || typeof o != "object" || !o.id) {
           console.error("Invalid row provided to deleteColumn");
           return;
         }
@@ -595,28 +665,28 @@ window.addEventListener("alpine:init", () => {
           console.error("Invalid column index provided to deleteColumn");
           return;
         }
-        const o = Alpine.store("rows").items;
-        if (!o || !Array.isArray(o)) {
+        const t = Alpine.store("rows").items;
+        if (!t || !Array.isArray(t)) {
           console.error("Rows store not properly initialized");
           return;
         }
-        const r = o.findIndex((i) => i.id === t.id);
+        const r = t.findIndex((i) => i.id === o.id);
         if (r === -1) {
-          console.error(`Row with id ${t.id} not found in rows store`);
+          console.error(`Row with id ${o.id} not found in rows store`);
           return;
         }
-        if (!Array.isArray(o[r].columns)) {
-          console.error(`Row with id ${t.id} has no valid columns array`);
+        if (!Array.isArray(t[r].columns)) {
+          console.error(`Row with id ${o.id} has no valid columns array`);
           return;
         }
-        if (e < 0 || e >= o[r].columns.length) {
-          console.error(`Column index ${e} out of bounds for row with id ${t.id}`);
+        if (e < 0 || e >= t[r].columns.length) {
+          console.error(`Column index ${e} out of bounds for row with id ${o.id}`);
           return;
         }
-        const n = o[r].columns[e];
-        n && n.elements && Array.isArray(n.elements) && n.elements.length > 0 ? (this.columnToDeleteRowId = t.id, this.columnToDeleteIndex = e, this.$dispatch("open-modal", { id: "confirm-column-deletion" })) : this.performColumnDeletion(t.id, e);
-      } catch (o) {
-        console.error("Error during column deletion process:", o), this.columnToDeleteRowId = null, this.columnToDeleteIndex = null;
+        const n = t[r].columns[e];
+        n && n.elements && Array.isArray(n.elements) && n.elements.length > 0 ? (this.columnToDeleteRowId = o.id, this.columnToDeleteIndex = e, this.$dispatch("open-modal", { id: "confirm-column-deletion" })) : this.performColumnDeletion(o.id, e);
+      } catch (t) {
+        console.error("Error during column deletion process:", t), this.columnToDeleteRowId = null, this.columnToDeleteIndex = null;
       }
     },
     /**
@@ -630,8 +700,8 @@ window.addEventListener("alpine:init", () => {
           return;
         }
         this.performColumnDeletion(this.columnToDeleteRowId, this.columnToDeleteIndex), this.$dispatch("close-modal", { id: "confirm-column-deletion" }), this.columnToDeleteRowId = null, this.columnToDeleteIndex = null;
-      } catch (t) {
-        console.error("Error during column deletion confirmation:", t), this.$dispatch("close-modal", { id: "confirm-column-deletion" }), this.columnToDeleteRowId = null, this.columnToDeleteIndex = null;
+      } catch (o) {
+        console.error("Error during column deletion confirmation:", o), this.$dispatch("close-modal", { id: "confirm-column-deletion" }), this.columnToDeleteRowId = null, this.columnToDeleteIndex = null;
       }
     },
     /**
@@ -640,9 +710,9 @@ window.addEventListener("alpine:init", () => {
      * @param {number|string} rowId - The ID of the row containing the column
      * @param {number} columnIndex - The index of the column to delete
      */
-    performColumnDeletion(t, e) {
+    performColumnDeletion(o, e) {
       try {
-        if (t == null) {
+        if (o == null) {
           console.error("Invalid rowId provided to performColumnDeletion");
           return;
         }
@@ -650,28 +720,28 @@ window.addEventListener("alpine:init", () => {
           console.error("Invalid columnIndex provided to performColumnDeletion");
           return;
         }
-        const o = Alpine.store("rows").items;
-        if (!o || !Array.isArray(o)) {
+        const t = Alpine.store("rows").items;
+        if (!t || !Array.isArray(t)) {
           console.error("Rows store not properly initialized");
           return;
         }
-        const r = o.findIndex((n) => n.id === t);
+        const r = t.findIndex((n) => n.id === o);
         if (r === -1) {
-          console.error(`Row with id ${t} not found in rows store`);
+          console.error(`Row with id ${o} not found in rows store`);
           return;
         }
-        if (!Array.isArray(o[r].columns)) {
-          console.error(`Row with id ${t} has no valid columns array`);
+        if (!Array.isArray(t[r].columns)) {
+          console.error(`Row with id ${o} has no valid columns array`);
           return;
         }
-        if (e < 0 || e >= o[r].columns.length) {
-          console.error(`Column index ${e} out of bounds for row with id ${t}`);
+        if (e < 0 || e >= t[r].columns.length) {
+          console.error(`Column index ${e} out of bounds for row with id ${o}`);
           return;
         }
-        if (o[r].columns.length === 1) {
+        if (t[r].columns.length === 1) {
           const n = Date.now();
-          o[r].columns = [{
-            id: o[r].columns[0].id,
+          t[r].columns = [{
+            id: t[r].columns[0].id,
             // Keep the same ID
             elements: [],
             // Clear elements
@@ -684,24 +754,24 @@ window.addEventListener("alpine:init", () => {
             customClasses: ""
           }], console.log("Column content cleared instead of deletion, as it was the last column in the row");
         } else
-          o[r].columns.splice(e, 1), o[r].columns = o[r].columns.map((n, l) => ({
+          t[r].columns.splice(e, 1), t[r].columns = t[r].columns.map((n, s) => ({
             ...n,
-            order: l
+            order: s
             // Reassign order based on array position
           }));
         this.updateCanvasData();
         try {
-          const n = JSON.stringify(o);
-          this.$wire.saveLayout(n).then((l) => {
-            l && l.success ? console.log("Layout updated and saved successfully") : console.warn("Layout saved but returned unexpected result", l);
-          }).catch((l) => {
-            console.error("Error saving layout after column operation:", l);
+          const n = JSON.stringify(t);
+          this.$wire.saveLayout(n).then((s) => {
+            s && s.success ? console.log("Layout updated and saved successfully") : console.warn("Layout saved but returned unexpected result", s);
+          }).catch((s) => {
+            console.error("Error saving layout after column operation:", s);
           });
         } catch (n) {
           console.error("Error stringifying layout after column operation:", n);
         }
-      } catch (o) {
-        console.error("Error performing column deletion:", o), this.updateCanvasData();
+      } catch (t) {
+        console.error("Error performing column deletion:", t), this.updateCanvasData();
       }
     },
     /**
@@ -710,9 +780,9 @@ window.addEventListener("alpine:init", () => {
      * @param {Object} row - The parent row object
      * @param {number} index - The index of the column to set as active
      */
-    setActiveColumn(t, e) {
+    setActiveColumn(o, e) {
       try {
-        if (!t || typeof t != "object" || !t.id) {
+        if (!o || typeof o != "object" || !o.id) {
           console.error("Invalid row provided to setActiveColumn");
           return;
         }
@@ -720,18 +790,18 @@ window.addEventListener("alpine:init", () => {
           console.error("Invalid column index provided to setActiveColumn");
           return;
         }
-        const o = Alpine.store("rows").items;
-        if (!o || !Array.isArray(o)) {
+        const t = Alpine.store("rows").items;
+        if (!t || !Array.isArray(t)) {
           console.error("Rows store not properly initialized");
           return;
         }
-        const r = o.find((l) => l.id === t.id);
+        const r = t.find((s) => s.id === o.id);
         if (!r) {
-          console.error(`Row with id ${t.id} not found in rows store`);
+          console.error(`Row with id ${o.id} not found in rows store`);
           return;
         }
         if (e < 0 || e >= r.columns.length) {
-          console.error(`Column index ${e} out of bounds for row with id ${t.id}`);
+          console.error(`Column index ${e} out of bounds for row with id ${o.id}`);
           return;
         }
         const n = r.columns[e];
@@ -740,8 +810,8 @@ window.addEventListener("alpine:init", () => {
           return;
         }
         this.activeRow = r, this.activeColumnIndex = e, this.$dispatch("open-modal", { id: "element-picker-modal" });
-      } catch (o) {
-        console.error("Error setting active column:", o), this.activeRow = null, this.activeColumnIndex = null;
+      } catch (t) {
+        console.error("Error setting active column:", t), this.activeRow = null, this.activeColumnIndex = null;
       }
     },
     /**
@@ -749,9 +819,9 @@ window.addEventListener("alpine:init", () => {
      * 
      * @param {string} elementType - The type of element to add
      */
-    addElement(t) {
+    addElement(o) {
       try {
-        if (!t || typeof t != "string") {
+        if (!o || typeof o != "string") {
           console.error("Invalid element type provided to addElement");
           return;
         }
@@ -764,12 +834,12 @@ window.addEventListener("alpine:init", () => {
           console.error("Rows store not properly initialized"), this.$dispatch("close-modal", { id: "element-picker-modal" });
           return;
         }
-        const o = e.findIndex((s) => s.id === this.activeRow.id);
-        if (o === -1) {
+        const t = e.findIndex((l) => l.id === this.activeRow.id);
+        if (t === -1) {
           console.error(`Row with id ${this.activeRow.id} not found in rows store`), this.$dispatch("close-modal", { id: "element-picker-modal" });
           return;
         }
-        const r = e[o];
+        const r = e[t];
         if (!Array.isArray(r.columns)) {
           console.error(`Row with id ${r.id} has no valid columns array`), this.$dispatch("close-modal", { id: "element-picker-modal" });
           return;
@@ -785,23 +855,23 @@ window.addEventListener("alpine:init", () => {
           console.warn("Column already has an element. Only one element per column is allowed."), this.$dispatch("close-modal", { id: "element-picker-modal" });
           return;
         }
-        const l = t.replace(/Filamentor/, "\\Filamentor\\").replace(/Elements/, "Elements\\");
+        const s = o.replace(/Filamentor/, "\\Filamentor\\").replace(/Elements/, "Elements\\");
         let i = {};
-        l.includes("Text") ? i = { text: "" } : l.includes("Image") ? i = { url: null, alt: "", thumbnail: null } : l.includes("Video") && (i = { url: "" }), e[o].columns[this.activeColumnIndex].elements.push({
+        s.includes("Text") ? i = { text: "" } : s.includes("Image") ? i = { url: null, alt: "", thumbnail: null } : s.includes("Video") && (i = { url: "" }), e[t].columns[this.activeColumnIndex].elements.push({
           id: Date.now(),
           // Add unique ID for the element
-          type: l,
+          type: s,
           content: i
         }), this.updateCanvasData();
         try {
-          const s = JSON.stringify(e);
-          this.$wire.saveLayout(s).then((c) => {
+          const l = JSON.stringify(e);
+          this.$wire.saveLayout(l).then((c) => {
             c && c.success ? console.log("Element added and layout saved successfully") : console.warn("Layout saved but returned unexpected result", c);
           }).catch((c) => {
             console.error("Error saving layout after adding element:", c);
           });
-        } catch (s) {
-          console.error("Error stringifying layout after adding element:", s);
+        } catch (l) {
+          console.error("Error stringifying layout after adding element:", l);
         }
         this.$dispatch("close-modal", { id: "element-picker-modal" }), this.activeRow = null, this.activeColumnIndex = null;
       } catch (e) {
@@ -815,9 +885,9 @@ window.addEventListener("alpine:init", () => {
      * @param {number} columnIndex - The index of the column containing the element
      * @param {number} elementIndex - The index of the element to edit (defaults to 0)
      */
-    editElement(t, e, o = 0) {
+    editElement(o, e, t = 0) {
       try {
-        if (!t || typeof t != "object" || !t.id) {
+        if (!o || typeof o != "object" || !o.id) {
           console.error("Invalid row provided to editElement");
           return;
         }
@@ -825,7 +895,7 @@ window.addEventListener("alpine:init", () => {
           console.error("Invalid column index provided to editElement");
           return;
         }
-        if (o == null || isNaN(parseInt(o))) {
+        if (t == null || isNaN(parseInt(t))) {
           console.error("Invalid element index provided to editElement");
           return;
         }
@@ -834,32 +904,32 @@ window.addEventListener("alpine:init", () => {
           console.error("Rows store not properly initialized");
           return;
         }
-        const n = r.find((a) => a.id === t.id);
+        const n = r.find((a) => a.id === o.id);
         if (!n) {
-          console.error(`Row with id ${t.id} not found in rows store`);
+          console.error(`Row with id ${o.id} not found in rows store`);
           return;
         }
         if (!Array.isArray(n.columns) || e >= n.columns.length) {
-          console.error(`Column index ${e} out of bounds for row with id ${t.id}`);
+          console.error(`Column index ${e} out of bounds for row with id ${o.id}`);
           return;
         }
-        const l = n.columns[e];
-        if (!Array.isArray(l.elements) || l.elements.length === 0) {
-          console.error(`No elements found in column ${e} of row with id ${t.id}`);
+        const s = n.columns[e];
+        if (!Array.isArray(s.elements) || s.elements.length === 0) {
+          console.error(`No elements found in column ${e} of row with id ${o.id}`);
           return;
         }
-        if (o >= l.elements.length) {
-          console.error(`Element index ${o} out of bounds for column ${e}`);
+        if (t >= s.elements.length) {
+          console.error(`Element index ${t} out of bounds for column ${e}`);
           return;
         }
-        const i = l.elements[o];
+        const i = s.elements[t];
         if (!i || !i.type) {
-          console.error(`Invalid element at index ${o}`);
+          console.error(`Invalid element at index ${t}`);
           return;
         }
-        this.activeRow = n, this.activeColumnIndex = e, this.activeElementIndex = o, this.activeElement = i;
-        const s = i.type;
-        if (!s) {
+        this.activeRow = n, this.activeColumnIndex = e, this.activeElementIndex = t, this.activeElement = i;
+        const l = i.type;
+        if (!l) {
           console.error("Element has no type");
           return;
         }
@@ -874,34 +944,34 @@ window.addEventListener("alpine:init", () => {
           return;
         }
         try {
-          if (s.includes("Text")) {
+          if (l.includes("Text")) {
             const a = i.content && typeof i.content.text < "u" ? i.content.text : "";
             this.$wire.set("elementData.text.content", a);
-          } else if (s.includes("Image")) {
+          } else if (l.includes("Image")) {
             const a = {
               url: i.content && i.content.url ? i.content.url : null,
               alt: i.content && i.content.alt ? i.content.alt : "",
               thumbnail: i.content && i.content.thumbnail ? i.content.thumbnail : null
             };
             this.$wire.set("elementData.image", a);
-          } else if (s.includes("Video")) {
+          } else if (l.includes("Video")) {
             const a = i.content && i.content.url ? i.content.url : "";
             this.$wire.set("elementData.video.url", a);
           } else
-            console.warn(`Unknown element type: ${s}`);
+            console.warn(`Unknown element type: ${l}`);
         } catch (a) {
           console.error("Error setting element data:", a);
           return;
         }
         try {
-          this.$wire.editElement(s, i.content || {}, i.id).catch((a) => {
+          this.$wire.editElement(l, i.content || {}, i.id).catch((a) => {
             console.error("Error in Livewire editElement method:", a);
           });
         } catch (a) {
           console.error("Error calling Livewire editElement method:", a);
           return;
         }
-        const c = s.split("\\").pop() || "Unknown";
+        const c = l.split("\\").pop() || "Unknown";
         this.$dispatch("open-modal", {
           id: "element-editor-modal",
           title: `Edit ${c} Element`
@@ -915,7 +985,7 @@ window.addEventListener("alpine:init", () => {
      * 
      * @param {Object} content - The content object from the editor (optional, may not be used)
      */
-    saveElementContent(t) {
+    saveElementContent(o) {
       try {
         if (!this.activeElement) {
           console.error("No active element to save content for"), this.$dispatch("close-modal", { id: "element-editor-modal" });
@@ -930,12 +1000,12 @@ window.addEventListener("alpine:init", () => {
           console.error("Rows store not properly initialized"), this.$dispatch("close-modal", { id: "element-editor-modal" });
           return;
         }
-        const o = e.findIndex((s) => s.id === this.activeRow.id);
-        if (o === -1) {
+        const t = e.findIndex((l) => l.id === this.activeRow.id);
+        if (t === -1) {
           console.error(`Row with id ${this.activeRow.id} not found in rows store`), this.$dispatch("close-modal", { id: "element-editor-modal" });
           return;
         }
-        const r = e[o];
+        const r = e[t];
         if (!Array.isArray(r.columns) || this.activeColumnIndex >= r.columns.length) {
           console.error(`Column index ${this.activeColumnIndex} out of bounds for row with id ${r.id}`), this.$dispatch("close-modal", { id: "element-editor-modal" });
           return;
@@ -945,39 +1015,39 @@ window.addEventListener("alpine:init", () => {
           console.error(`Element index ${this.activeElementIndex} out of bounds for column ${this.activeColumnIndex}`), this.$dispatch("close-modal", { id: "element-editor-modal" });
           return;
         }
-        const l = this.activeElement.type, i = () => {
+        const s = this.activeElement.type, i = () => {
           try {
-            const s = JSON.stringify(e);
-            this.$wire.saveLayout(s).then((c) => {
+            const l = JSON.stringify(e);
+            this.$wire.saveLayout(l).then((c) => {
               c && c.success ? console.log("Element content updated and layout saved successfully") : console.warn("Layout saved but returned unexpected result", c), this.$dispatch("close-modal", { id: "element-editor-modal" });
             }).catch((c) => {
               console.error("Error saving layout after updating element content:", c), this.$dispatch("close-modal", { id: "element-editor-modal" });
             });
-          } catch (s) {
-            console.error("Error processing layout data:", s), this.$dispatch("close-modal", { id: "element-editor-modal" });
+          } catch (l) {
+            console.error("Error processing layout data:", l), this.$dispatch("close-modal", { id: "element-editor-modal" });
           }
         };
-        if (l.includes("Image")) {
-          const s = this.$wire.get("elementData.image.alt") || "";
+        if (s.includes("Image")) {
+          const l = this.$wire.get("elementData.image.alt") || "";
           this.$wire.uploadMedia().then((c) => {
             if (c && c.url)
-              e[o].columns[this.activeColumnIndex].elements[this.activeElementIndex] = {
+              e[t].columns[this.activeColumnIndex].elements[this.activeElementIndex] = {
                 ...this.activeElement,
                 content: {
                   url: c.url,
                   thumbnail: c.thumbnail,
-                  alt: s
+                  alt: l
                   // Use the alt text we captured earlier
                 }
               };
             else {
               const a = this.activeElement.content || {};
-              e[o].columns[this.activeColumnIndex].elements[this.activeElementIndex] = {
+              e[t].columns[this.activeColumnIndex].elements[this.activeElementIndex] = {
                 ...this.activeElement,
                 content: {
                   url: a.url || "",
                   thumbnail: a.thumbnail || "",
-                  alt: s
+                  alt: l
                   // Update only the alt text
                 }
               };
@@ -987,44 +1057,44 @@ window.addEventListener("alpine:init", () => {
             console.error("Error during image processing:", c);
             try {
               const a = this.activeElement.content || {};
-              e[o].columns[this.activeColumnIndex].elements[this.activeElementIndex] = {
+              e[t].columns[this.activeColumnIndex].elements[this.activeElementIndex] = {
                 ...this.activeElement,
                 content: {
                   url: a.url || "",
                   thumbnail: a.thumbnail || "",
-                  alt: s
+                  alt: l
                 }
               }, i();
             } catch (a) {
               console.error("Error saving alt text after upload failure:", a), this.$dispatch("close-modal", { id: "element-editor-modal" });
             }
           });
-        } else if (l.includes("Video"))
+        } else if (s.includes("Video"))
           try {
-            const s = this.$wire.get("elementData.video.url");
-            s || console.warn("Empty video URL provided"), e[o].columns[this.activeColumnIndex].elements[this.activeElementIndex] = {
+            const l = this.$wire.get("elementData.video.url");
+            l || console.warn("Empty video URL provided"), e[t].columns[this.activeColumnIndex].elements[this.activeElementIndex] = {
               ...this.activeElement,
               content: {
-                url: s || ""
+                url: l || ""
               }
             }, i();
-          } catch (s) {
-            console.error("Error updating video element:", s), this.$dispatch("close-modal", { id: "element-editor-modal" });
+          } catch (l) {
+            console.error("Error updating video element:", l), this.$dispatch("close-modal", { id: "element-editor-modal" });
           }
-        else if (l.includes("Text"))
+        else if (s.includes("Text"))
           try {
-            const s = this.$wire.get("elementData.text.content");
-            e[o].columns[this.activeColumnIndex].elements[this.activeElementIndex] = {
+            const l = this.$wire.get("elementData.text.content");
+            e[t].columns[this.activeColumnIndex].elements[this.activeElementIndex] = {
               ...this.activeElement,
               content: {
-                text: s || ""
+                text: l || ""
               }
             }, i();
-          } catch (s) {
-            console.error("Error updating text element:", s), this.$dispatch("close-modal", { id: "element-editor-modal" });
+          } catch (l) {
+            console.error("Error updating text element:", l), this.$dispatch("close-modal", { id: "element-editor-modal" });
           }
         else
-          console.error(`Unknown element type: ${l}`), this.$dispatch("close-modal", { id: "element-editor-modal" });
+          console.error(`Unknown element type: ${s}`), this.$dispatch("close-modal", { id: "element-editor-modal" });
       } catch (e) {
         console.error("Error saving element content:", e), this.$dispatch("close-modal", { id: "element-editor-modal" }), this.activeRow = null, this.activeColumnIndex = null, this.activeElementIndex = null, this.activeElement = null;
       }
@@ -1036,9 +1106,9 @@ window.addEventListener("alpine:init", () => {
      * @param {number} columnIndex - The index of the column containing the element
      * @param {number} elementIndex - The index of the element to delete (defaults to 0)
      */
-    deleteElement(t, e, o = 0) {
+    deleteElement(o, e, t = 0) {
       try {
-        if (!t || typeof t != "object" || !t.id) {
+        if (!o || typeof o != "object" || !o.id) {
           console.error("Invalid row provided to deleteElement");
           return;
         }
@@ -1046,7 +1116,7 @@ window.addEventListener("alpine:init", () => {
           console.error("Invalid column index provided to deleteElement");
           return;
         }
-        if (o == null || isNaN(parseInt(o))) {
+        if (t == null || isNaN(parseInt(t))) {
           console.error("Invalid element index provided to deleteElement");
           return;
         }
@@ -1055,31 +1125,31 @@ window.addEventListener("alpine:init", () => {
           console.error("Rows store not properly initialized");
           return;
         }
-        const n = r.findIndex((i) => i.id === t.id);
+        const n = r.findIndex((i) => i.id === o.id);
         if (n === -1) {
-          console.error(`Row with id ${t.id} not found in rows store`);
+          console.error(`Row with id ${o.id} not found in rows store`);
           return;
         }
         if (!Array.isArray(r[n].columns) || e >= r[n].columns.length) {
-          console.error(`Column index ${e} out of bounds for row with id ${t.id}`);
+          console.error(`Column index ${e} out of bounds for row with id ${o.id}`);
           return;
         }
-        const l = r[n].columns[e];
-        if (!Array.isArray(l.elements)) {
+        const s = r[n].columns[e];
+        if (!Array.isArray(s.elements)) {
           console.error(`Column ${e} has no elements array`);
           return;
         }
-        if (o >= l.elements.length) {
-          console.error(`Element index ${o} out of bounds for column ${e}`);
+        if (t >= s.elements.length) {
+          console.error(`Element index ${t} out of bounds for column ${e}`);
           return;
         }
-        r[n].columns[e].elements.splice(o, 1), this.updateCanvasData();
+        r[n].columns[e].elements.splice(t, 1), this.updateCanvasData();
         try {
           const i = JSON.stringify(r);
-          this.$wire.saveLayout(i).then((s) => {
-            s && s.success ? console.log("Element deleted and layout saved successfully") : console.warn("Layout saved after element deletion but returned unexpected result", s);
-          }).catch((s) => {
-            console.error("Error saving layout after element deletion:", s);
+          this.$wire.saveLayout(i).then((l) => {
+            l && l.success ? console.log("Element deleted and layout saved successfully") : console.warn("Layout saved after element deletion but returned unexpected result", l);
+          }).catch((l) => {
+            console.error("Error saving layout after element deletion:", l);
           });
         } catch (i) {
           console.error("Error stringifying layout after element deletion:", i);
@@ -1094,42 +1164,42 @@ window.addEventListener("alpine:init", () => {
      */
     updateCanvasData() {
       try {
-        const t = Alpine.store("rows").items;
-        if (!t) {
+        const o = Alpine.store("rows").items;
+        if (!o) {
           console.error("Rows store is not properly initialized");
           return;
         }
         let e;
         try {
-          e = JSON.stringify(t);
-        } catch (o) {
-          console.error("Error converting layout data to JSON:", o);
+          e = JSON.stringify(o);
+        } catch (t) {
+          console.error("Error converting layout data to JSON:", t);
           return;
         }
         if (this.$refs.canvasData)
           try {
             this.$refs.canvasData.value = e;
-          } catch (o) {
-            console.error("Error updating canvas data reference:", o);
+          } catch (t) {
+            console.error("Error updating canvas data reference:", t);
           }
         else
           console.warn("Canvas data reference not found in DOM");
         try {
-          this.$wire.set("data.layout", e).catch((o) => {
-            console.error("Error updating Livewire data.layout property:", o);
+          this.$wire.set("data.layout", e).catch((t) => {
+            console.error("Error updating Livewire data.layout property:", t);
           });
-        } catch (o) {
-          console.error("Error calling Livewire set method:", o);
+        } catch (t) {
+          console.error("Error calling Livewire set method:", t);
         }
         console.log("Canvas data updated successfully");
-      } catch (t) {
-        console.error("Unexpected error in updateCanvasData:", t);
+      } catch (o) {
+        console.error("Unexpected error in updateCanvasData:", o);
       }
     },
     // Helper function to safely parse numbers
-    safeParseNumber(t) {
+    safeParseNumber(o) {
       try {
-        const e = Number(t);
+        const e = Number(o);
         return isNaN(e) ? 0 : e;
       } catch {
         return 0;
